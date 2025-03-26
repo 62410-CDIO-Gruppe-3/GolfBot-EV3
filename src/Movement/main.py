@@ -66,11 +66,19 @@ def TurnLeft(deg):
     Motor_RIGHT.run(-deg)
     wait(500)
     return
-#stop = False
 
-#while not stop:
-#Motor_LEFT.run(1500)
-#Motor_RIGHT.run(1500)
+def TurnRight(deg):
+    Motor_LEFT.run(-deg)
+    Motor_RIGHT.run(deg)
+    wait(500)
+    return
+
+def TurnOffAllMotors():
+    Motor_LEFT.stop()
+    Motor_RIGHT.stop()
+    Motor_GATE.stop()
+    Motor_PUSH.stop()
+    return
 
 
 ev3.speaker.beep()
