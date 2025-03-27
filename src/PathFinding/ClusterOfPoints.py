@@ -21,7 +21,11 @@ class ClusterOfPoints:
         points = self.points[:]
 
         while len(points) >= 3:
-            if len(points) == 4:
+            if len(points) == 7:
+                triplets_and_quadruplets.append(points[:4])
+                triplets_and_quadruplets.append(points[4:])
+                break
+            elif len(points) == 4:
                 triplets_and_quadruplets.append(points)
                 break
 
