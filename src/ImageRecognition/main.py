@@ -13,7 +13,7 @@
 
 import marimo
 
-__generated_with = "0.11.29"
+__generated_with = "0.13.15"
 app = marimo.App(width="medium")
 
 
@@ -26,9 +26,9 @@ def _():
 
     # ----- CONFIGURATION -----
     API_URL = "https://detect.roboflow.com"
-    API_KEY = "BdmadiDKNX7YzP4unsUm"
+    API_KEY = "HgPiWohuYZMpwLGfCExS"
     MODEL_ID = "tabletennis-ball-detection/1"
-    IMAGE_PATH = "C:\\Users\\laxma\\Downloads\\frame.jpg"
+    IMAGE_PATH = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image.jpg"
     WINDOW_NAME = "Select 4 points"
     TRANSFORM_WIDTH, TRANSFORM_HEIGHT = 1800, 1200
 
@@ -65,24 +65,14 @@ def _():
         cv2.waitKey(1)
     cv2.destroyAllWindows()
     return (
-        API_KEY,
-        API_URL,
-        IMAGE_PATH,
-        InferenceHTTPClient,
-        MODEL_ID,
         TRANSFORM_HEIGHT,
         TRANSFORM_WIDTH,
-        WINDOW_NAME,
-        click_event,
-        client,
         cv2,
-        height,
         image,
         np,
         points,
         result,
         sys,
-        width,
     )
 
 
@@ -116,17 +106,7 @@ def _(TRANSFORM_HEIGHT, TRANSFORM_WIDTH, cv2, np, points, result, sys):
     for pt in transformed_points:
         print(f"({pt[0]:.2f}, {pt[1]:.2f})")
 
-    return (
-        H,
-        detected_points,
-        points_array,
-        pt,
-        pts_dst,
-        pts_src,
-        status,
-        transformed_points,
-        transformed_points_array,
-    )
+    return H, transformed_points
 
 
 @app.cell
@@ -145,7 +125,7 @@ def _(H, TRANSFORM_HEIGHT, TRANSFORM_WIDTH, cv2, image, transformed_points):
     cv2.imshow("Transformed Image with Predictions", warped_image)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    return warped_image, x, y
+    return
 
 
 if __name__ == "__main__":
