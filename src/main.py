@@ -1,12 +1,8 @@
-# /// script
-# requires-python = ">=3.12"
-# dependencies = [
-#     "marimo",
-# ]
-# ///
-import marimo
-from src.ImageRecognition.ImageRecognition import get_transformed_points_from_image
-from src.PathFinding.PathGenerator import get_closest_path_points
+import sys
+sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
+
+from ImageRecognition.ImageRecognition import get_transformed_points_from_image
+from PathFinding.PathGenerator import get_closest_path_points
 
 def main():
     # Run image recognition to get transformed points
