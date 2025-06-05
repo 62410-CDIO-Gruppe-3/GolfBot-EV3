@@ -134,9 +134,11 @@ def _(H, TRANSFORM_HEIGHT, TRANSFORM_WIDTH, cv2, image, transformed_points):
 if __name__ == "__main__":
     app.run()
 
-def get_transformed_points_from_image():
+def get_transformed_points_from_image(image_path=None):
     """
     Runs the image recognition pipeline and returns only the transformed points.
+    Args:
+        image_path (str): Path to the image file.
     Returns:
         np.ndarray: Array of transformed (x, y) points.
     """
@@ -149,14 +151,15 @@ def get_transformed_points_from_image():
     API_URL = "https://detect.roboflow.com"
     API_KEY = "HgPiWohuYZMpwLGfCExS"
     MODEL_ID = "tabletennis-ball-detection/1"
-    IMAGE_PATH = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image.jpg"
+    if image_path is None:
+        image_path = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image.jpg"
     WINDOW_NAME = "Select 4 points"
     TRANSFORM_WIDTH, TRANSFORM_HEIGHT = 1800, 1200
 
     # ----- LOAD IMAGE -----
-    image = cv2.imread(IMAGE_PATH, cv2.IMREAD_REDUCED_COLOR_2)
+    image = cv2.imread(image_path, cv2.IMREAD_REDUCED_COLOR_2)
     if image is None:
-        print(f"Failed to load image from {IMAGE_PATH}")
+        print(f"Failed to load image from {image_path}")
         sys.exit(1)
 
     # ----- INFERENCE -----
@@ -177,7 +180,7 @@ def get_transformed_points_from_image():
     cv2.imshow(WINDOW_NAME, image)
     cv2.setMouseCallback(WINDOW_NAME, click_event)
 
-    print("Please select 4 points in the image.")
+    print(f"Please select 4 points in the image: {image_path}")
     while len(points) < 4:
         cv2.waitKey(1)
     cv2.destroyAllWindows()
