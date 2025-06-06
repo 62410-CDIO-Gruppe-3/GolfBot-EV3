@@ -1,39 +1,102 @@
 import sys
 sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
 
-import numpy as np
-from ImageRecognition.ImageRecognition import get_transformed_points_from_image  # Updated import
+from PathFinding.PointsGenerator import get_closest_path_points
+from ImageRecognition.ImagePoints import get_transformed_points_from_image
+from ImageRecognition.ArrowDetection import detect_arrow_tip
 
-def get_closest_path_points(transformed_points, reference_point, num_points=5):
+def get_arrow_vector(image, arrow_template, transformed_points):
     """
-    Given a list of transformed points and a reference point,
-    return the path of the five closest points to the reference point.
+    Returns a vector (dx, dy) from the arrow tip to the closest transformed point.
 
     Args:
-        transformed_points (list or np.ndarray): List of (x, y) tuples or Nx2 array.
-        reference_point (tuple): (x, y) coordinates to measure distance from.
-        num_points (int): Number of closest points to return.
+        image (np.ndarray): The input image (BGR).
+        arrow_template (np.ndarray): Grayscale arrow template image.
+        transformed_points (list or np.ndarray): List of (x, y) points.
 
     Returns:
-        list: List of the five closest (x, y) points.
+        tuple: ((tip_x, tip_y), (closest_x, closest_y), (dx, dy)) or None if not found.
     """
-    # Convert to numpy array for easier computation
-    points = np.array(transformed_points)
-    ref = np.array(reference_point)
+    from ImageRecognition.ArrowDetection import detect_arrow_tip
+    from PathFinding.PointsGenerator import get_closest_path_points
 
-    # Compute Euclidean distances
-    distances = np.linalg.norm(points - ref, axis=1)
+    tip = detect_arrow_tip(image, arrow_template)
+    if tip is None or transformed_points is None or len(transformed_points) == 0:
+        return None
 
-    # Get indices of the closest points
-    closest_indices = np.argsort(distances)[:num_points]
+    closest = get_closest_path_points(transformed_points, tip, num_points=1)[0]
+    dx = closest[0] - tip[0]
+    dy = closest[1] - tip[1]
+    return (tip, closest, (dx, dy))
 
-    # Return the closest points as a list of tuples
-    return [tuple(points[i]) for i in closest_indices]
+def get_arrow_vector_x(image, arrow_template, transformed_points):
+    """
+    Returns the x component (dx) of the vector from the arrow tip to the closest transformed point.
 
-# Example usage:
-if __name__ == "__main__":
-    # Get transformed points from ImageRecognition using the getter
-    transformed_points = get_transformed_points_from_image()
-    reference_point = (0, 0)  # Replace with your actual reference point
-    closest_points = get_closest_path_points(transformed_points, reference_point)
-    print(closest_points)
+    Args:
+        image (np.ndarray): The input image (BGR).
+        arrow_template (np.ndarray): Grayscale arrow template image.
+        transformed_points (list or np.ndarray): List of (x, y) points.
+
+    Returns:
+        float or None: The x component (dx) of the vector, or None if not found.
+    """
+    result = get_arrow_vector(image, arrow_template, transformed_points)
+    if result is None:
+        return None
+    _, _, (dx, _) = result
+    return dx
+
+def get_arrow_vector_y(image, arrow_template, transformed_points):
+    """
+    Returns the x component (dx) of the vector from the arrow tip to the closest transformed point.
+
+    Args:
+        image (np.ndarray): The input image (BGR).
+        arrow_template (np.ndarray): Grayscale arrow template image.
+        transformed_points (list or np.ndarray): List of (x, y) points.
+
+    Returns:
+        float or None: The x component (dx) of the vector, or None if not found.
+    """
+    result = get_arrow_vector(image, arrow_template, transformed_points)
+    if result is None:
+        return None
+    _, _, (dy, _) = result
+    return dy
+
+def get_arrow_vector_size(image, arrow_template, transformed_points):
+    """
+    Returns the size of the vector from the arrow tip to the closest transformed point.
+
+    Args:
+        image (np.ndarray): The input image (BGR).
+        arrow_template (np.ndarray): Grayscale arrow template image.
+        transformed_points (list or np.ndarray): List of (x, y) points.
+
+    Returns:
+        float or None: The size of the vector, or None if not found.
+    """
+    result = get_arrow_vector(image, arrow_template, transformed_points)
+    if result is None:
+        return None
+    _, _, (dx, dy) = result
+    return (dx**2 + dy**2)**0.5
+
+def get_arrow_vector_angle(image, arrow_template, transformed_points):
+    """
+    Returns the angle of the vector from the arrow tip to the closest transformed point.
+
+    Args:
+        image (np.ndarray): The input image (BGR).
+        arrow_template (np.ndarray): Grayscale arrow template image.
+        transformed_points (list or np.ndarray): List of (x, y) points.
+
+    Returns:
+        float or None: The angle of the vector in radians, or None if not found.
+    """
+    result = get_arrow_vector(image, arrow_template, transformed_points)
+    if result is None:
+        return None
+    _, _, (dx, dy) = result
+    return np.arctan2(dy, dx)
