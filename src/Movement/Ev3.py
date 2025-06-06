@@ -28,6 +28,17 @@ def TurnRight(angle_deg):
     golfbot.turn(angle_deg)
 def TurnLeft(angle_deg):
     golfbot.turn(-angle_deg)
+#new push
+def OpenGate():
+    Motor_GATE.run(150)
+    wait(300)
+    return
+def CloseGate():
+    Motor_GATE.run(-150)
+    wait(300)
+    return
+
+
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
@@ -75,6 +86,8 @@ while True:
             "DriveStrightDist": DriveStrightDist,
             "TurnLeft": TurnLeft,
             "TurnRight": TurnRight,
+            "CloseGate": CloseGate,
+            "OpenGate": OpenGate,
             "golfbot":     golfbot              
         }
 

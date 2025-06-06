@@ -51,17 +51,19 @@ def main_loop():
             #needs to stop the motor etc before breaking if running etc
             #StopMotor = True
             break
+
         if KeyboardRead.strip().lower() == "a":
             message = f"TurnLeft({DegreeTurn})"
         if KeyboardRead.strip().lower() == "s":
             message = f"TurnRight({DegreeTurn})"
         if KeyboardRead.strip().lower() == "w":
             message = f"DriveStrightDist({ForwardMM})"
-        
-        if KeyboardRead.strip().lower() == "p":
-            message = script1
-        if KeyboardRead.strip().lower() == "o":
-            message = script2
+        #new push:
+        if KeyboardRead.strip().lower() == "v":
+            message = "OpenGate()"
+        if KeyboardRead.strip().lower() == "c":
+            message = "CloseGate()"
+
         if KeyboardRead.strip().lower() == "x":
             #message = StopDrive
             message = script1
