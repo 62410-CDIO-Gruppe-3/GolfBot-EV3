@@ -28,13 +28,20 @@ def TurnRight(angle_deg):
     golfbot.turn(angle_deg)
 def TurnLeft(angle_deg):
     golfbot.turn(-angle_deg)
-#new push
 def OpenGate():
     Motor_GATE.run(150)
     wait(300)
     return
 def CloseGate():
     Motor_GATE.run(-150)
+    wait(300)
+    return
+def PushOut():
+    Motor_PUSH.run(150)
+    wait(300)
+    return
+def PushReturn():
+    Motor_PUSH.run(-150)
     wait(300)
     return
 
@@ -75,7 +82,7 @@ while True:
         ev3.screen.clear()
         ev3.screen.draw_text(0, 10, "Executing…")
 
-        # Everything your remote script might need lives here
+        # Namespace for recognized names
         exec_namespace = {
             "ev3": ev3,
             "wait": wait,
@@ -88,6 +95,8 @@ while True:
             "TurnRight": TurnRight,
             "CloseGate": CloseGate,
             "OpenGate": OpenGate,
+            "PushOut": PushOut,
+            "PushReturn": PushReturn,
             "golfbot":     golfbot              
         }
 
