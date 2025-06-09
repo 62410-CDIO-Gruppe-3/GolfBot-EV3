@@ -4,7 +4,7 @@ import os
 sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
 
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
-from PathFinding.PathGenerator import get_closest_path_points
+from PathFinding.PointsGenerator import get_closest_path_points
 
 def main():
     assets_dir = r"C:\\Users\\hatal\\GolfBot-EV3\\src\\assets"
