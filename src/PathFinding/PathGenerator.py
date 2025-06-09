@@ -17,8 +17,8 @@ def get_arrow_vector(image, arrow_template, transformed_points):
     Returns:
         tuple: ((tip_x, tip_y), (closest_x, closest_y), (dx, dy)) or None if not found.
     """
-    from ImageRecognition.ArrowDetection import detect_arrow_tip
-    from PathFinding.PointsGenerator import get_closest_path_points
+
+    transformed_points = get_transformed_points_from_image(image, transformed_points)
 
     tip = detect_arrow_tip(image, arrow_template)
     if tip is None or transformed_points is None or len(transformed_points) == 0:
