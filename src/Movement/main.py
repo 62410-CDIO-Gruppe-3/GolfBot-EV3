@@ -1,55 +1,67 @@
 #!/usr/bin/env pybricks-micropython
 import socket
-from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
-from pybricks.parameters import Port, Stop, Direction, Button, Color
-from pybricks.tools import wait, StopWatch, DataLog
-from pybricks.robotics import DriveBase
-from pybricks.media.ev3dev import SoundFile, ImageFile
-
+from ev3dev2.motor import LargeMotor, MediumMotor, Motor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
+from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
+from ev3dev2.sensor.lego import TouchSensor, ColorSensor, InfraredSensor, UltrasonicSensor, GyroSensor
+from ev3dev2.button import Button
+from ev3dev2.sound import Sound
+from ev3dev2.display import Display
+from ev3dev2.wheel import EV3Tire
+from ev3dev2.motor import MoveTank
 # ----------------------------------------------------------------------
 # hardware
 # ----------------------------------------------------------------------
-ev3 = EV3Brick()
+sound = Sound()
 
-Motor_LEFT  = Motor(Port.A)
-Motor_RIGHT = Motor(Port.D)
-Motor_GATE  = Motor(Port.C)
-Motor_PUSH  = Motor(Port.B)
+golfbot = MoveTank(OUTPUT_A, OUTPUT_C)
 
-golfbot = DriveBase(Motor_LEFT, Motor_RIGHT,
-                    wheel_diameter=55.5, axle_track=100)
+Motor_LEFT  = LargeMotor(OUTPUT_A)
+print("Motor_LEFT initialized")
+Motor_RIGHT = LargeMotor(OUTPUT_C)
+print("Motor_RIGHT initialized")
+Motor_GATE  = Motor(OUTPUT_D)
+print("Motor_GATE initialized")
+Motor_PUSH  = Motor(OUTPUT_B)
+print("Motor_PUSH initialized")
+
+
+
 def DriveStrightDist(dist):
     golfbot.straight(-dist)
     return
 #+ is right, - is left
 def TurnRight(angle_deg):
-    golfbot.turn(angle_deg)
+    golfbot.turn_right(angle = angle_deg)
+
 def TurnLeft(angle_deg):
-    golfbot.turn(-angle_deg)
+    golfbot.turn_left(angle = -angle_deg)
+
 def OpenGate():
-    Motor_GATE.run(150)
-    wait(300)
+    Motor_GATE.on(speed=50)
+    Motor_GATE.wait_until_not_moving(timeout=300)
     return
+
 def CloseGate():
-    Motor_GATE.run(-150)
-    wait(300)
+    Motor_GATE.on(speed=-50)
+    Motor_GATE.wait_until_not_moving(timeout=300)
     return
+
+
 def PushOut():
-    Motor_PUSH.run(150)
-    wait(300)
+    Motor_PUSH.on(speed=50)
+    Motor_PUSH.wait_until_not_moving(timeout=300)
     return
+
 def PushReturn():
-    Motor_PUSH.run(-150)
-    wait(300)
+    Motor_PUSH.on(speed=-50)
+    Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
-HOST = ''          # listen on all interfaces
+HOST = "192.168.199.36"          # listen on all interfaces
 PORT = 5532       # free port
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -57,17 +69,11 @@ server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # ← NEW
 server_socket.bind((HOST, PORT))
 server_socket.listen(1)
 
-ev3.screen.clear()
-ev3.screen.draw_text(0, 10, "Send to:")
-ev3.screen.draw_text(0, 30, "Port {}".format(PORT))
 
 while True:
     try:
         # Wait for a client
         conn, addr = server_socket.accept()
-        ev3.screen.clear()
-        ev3.screen.draw_text(0, 10, "Connected from:")
-        ev3.screen.draw_text(0, 30, "{}".format(addr))
 
         # Receive full script
         received_data = b""
@@ -79,13 +85,10 @@ while True:
 
         script = received_data.decode("utf-8")
 
-        ev3.screen.clear()
-        ev3.screen.draw_text(0, 10, "Executing…")
-
         # Namespace for recognized names
         exec_namespace = {
-            "ev3": ev3,
-            "wait": wait,
+            #"ev3": ev3,
+            #"wait": wait_until_not_moving,
             "Motor_LEFT":  Motor_LEFT,          
             "Motor_RIGHT": Motor_RIGHT,
             "Motor_GATE":  Motor_GATE,
@@ -109,12 +112,7 @@ while True:
         conn.send(response.encode("utf-8"))
         conn.close()
 
-        ev3.screen.clear()
-        ev3.screen.draw_text(0, 10, "Ready for new conn.")
 
     except Exception as err:
-        ev3.speaker.beep()
-        ev3.screen.clear()
-        ev3.screen.draw_text(0, 10, "Server error:")
-        ev3.screen.draw_text(0, 30, str(err))
-    wait(2000)
+        print("Error:", err)
+    sound.wait(2000)
