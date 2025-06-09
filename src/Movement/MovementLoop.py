@@ -46,7 +46,7 @@ def movement_loop():
         
         # Calculate the arrow vector components
         dx = get_arrow_vector_x(image_path, arrow_tip, closest_point)
-        #dy = get_arrow_vector_y(image_path, arrow_tip, closest_point)
+        dy = get_arrow_vector_y(image_path, arrow_tip, closest_point)
         angle = get_arrow_vector_angle(image_path, arrow_tip, closest_point)
         size = get_arrow_vector_size(image_path, arrow_tip, closest_point)
 
@@ -58,7 +58,7 @@ def movement_loop():
             message = f"DriveStraightDist({-size})"
         
         if angle < 0:
-            if dx < 0:
+            if dx < 0 or dy > 0:
                 message = f"TurnLeft({abs(angle)})"
                 message = f" DriveStraightDist({-size})"
             else:
@@ -70,7 +70,7 @@ def movement_loop():
         message = f"CloseGate()"
 
         goal_vector_dx = get_arrow_vector_x(image_path, arrow_tip, goal)  
-        #goal_vector_dy = get_arrow_vector_y(image_path, arrow_tip, goal)
+        goal_vector_dy = get_arrow_vector_y(image_path, arrow_tip, goal)
         goal_vector_angle = get_arrow_vector_angle(image_path, arrow_tip, goal)
         goal_vector_size = get_arrow_vector_size(image_path, arrow_tip, goal)
 
@@ -82,7 +82,7 @@ def movement_loop():
             message = f"DriveStraightDist({-goal_vector_size})"
         
         if goal_vector_angle < 0:
-            if goal_vector_dx < 0:
+            if goal_vector_dx < 0 or goal_vector_dy > 0:
                 message = f"TurnLeft({abs(goal_vector_angle)})"
                 message = f" DriveStraightDist({-goal_vector_size})"
             else:
@@ -107,19 +107,19 @@ def movement_loop():
         
         # Calculate the arrow vector components
         dx = get_arrow_vector_x(image_path, arrow_tip, closest_point)
-        #dy = get_arrow_vector_y(image_path, arrow_tip, closest_point)
+        dy = get_arrow_vector_y(image_path, arrow_tip, closest_point)
         angle = get_arrow_vector_angle(image_path, arrow_tip, closest_point)
         size = get_arrow_vector_size(image_path, arrow_tip, closest_point)
 
         if angle is None or size is None:
             print("Failed to calculate angle or size.")
-            continue
+            break
 
         if angle == 0:
             message = f"DriveStraightDist({-size})"
         
         if angle < 0:
-            if dx < 0:
+            if dx < 0 or dy > 0:
                 message = f"TurnLeft({abs(angle)})"
                 message = f" DriveStraightDist({-size})"
             else:
@@ -131,7 +131,7 @@ def movement_loop():
         message = f"CloseGate()"
     
     goal_vector_dx = get_arrow_vector_x(image_path, arrow_tip, goal)  
-    #goal_vector_dy = get_arrow_vector_y(image_path, arrow_tip, goal)
+    goal_vector_dy = get_arrow_vector_y(image_path, arrow_tip, goal)
     goal_vector_angle = get_arrow_vector_angle(image_path, arrow_tip, goal)
     goal_vector_size = get_arrow_vector_size(image_path, arrow_tip, goal)
 
@@ -142,7 +142,7 @@ def movement_loop():
             message = f"DriveStraightDist({-goal_vector_size})"
         
     if goal_vector_angle < 0:
-        if goal_vector_dx < 0:
+        if goal_vector_dx < 0 or goal_vector_dy > 0:
                 message = f"TurnLeft({abs(goal_vector_angle)})"
                 message = f" DriveStraightDist({-goal_vector_size})"
         else:
@@ -160,26 +160,26 @@ def movement_loop():
         arrow_tip = detect_arrow_tip(image_path)
         if arrow_tip is None:
             print("Arrow tip not detected.")
-            continue
+            break
         
         # Get the closest path points
         closest_point = get_closest_path_points(transformed_points, arrow_tip, num_points=1)
         
         # Calculate the arrow vector components
         dx = get_arrow_vector_x(image_path, arrow_tip, closest_point)
-        #dy = get_arrow_vector_y(image_path, arrow_tip, closest_point)
+        dy = get_arrow_vector_y(image_path, arrow_tip, closest_point)
         angle = get_arrow_vector_angle(image_path, arrow_tip, closest_point)
         size = get_arrow_vector_size(image_path, arrow_tip, closest_point)
 
         if angle is None or size is None:
             print("Failed to calculate angle or size.")
-            continue
+            break
 
         if angle == 0:
             message = f"DriveStraightDist({-size})"
         
         if angle < 0:
-            if dx < 0:
+            if dx < 0 or dy > 0:
                 message = f"TurnLeft({abs(angle)})"
                 message = f" DriveStraightDist({-size})"
             else:
@@ -191,7 +191,7 @@ def movement_loop():
         message = f"CloseGate()"
     
     goal_vector_dx = get_arrow_vector_x(image_path, arrow_tip, goal)  
-    #goal_vector_dy = get_arrow_vector_y(image_path, arrow_tip, goal)
+    goal_vector_dy = get_arrow_vector_y(image_path, arrow_tip, goal)
     goal_vector_angle = get_arrow_vector_angle(image_path, arrow_tip, goal)
     goal_vector_size = get_arrow_vector_size(image_path, arrow_tip, goal)
 
@@ -202,7 +202,7 @@ def movement_loop():
             message = f"DriveStraightDist({-goal_vector_size})"
         
     if goal_vector_angle < 0:
-        if goal_vector_dx < 0:
+        if goal_vector_dx < 0 or goal_vector_dy > 0:
                 message = f"TurnLeft({abs(goal_vector_angle)})"
                 message = f" DriveStraightDist({-goal_vector_size})"
         else:
