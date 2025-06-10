@@ -13,49 +13,51 @@ from ev3dev2.motor import MoveTank
 # ----------------------------------------------------------------------
 sound = Sound()
 
-golfbot = MoveTank(OUTPUT_A, OUTPUT_C)
+golfbot = MoveTank(OUTPUT_C, OUTPUT_B)
 wheel_diameter = 56  # mm
 
-Motor_LEFT  = LargeMotor(OUTPUT_A)
+Motor_LEFT  = LargeMotor(OUTPUT_C)
 print("Motor_LEFT initialized")
-Motor_RIGHT = LargeMotor(OUTPUT_C)
+Motor_RIGHT = LargeMotor(OUTPUT_B)
 print("Motor_RIGHT initialized")
-Motor_GATE  = Motor(OUTPUT_D)
+Motor_GATE  = Motor(OUTPUT_A)
 print("Motor_GATE initialized")
-Motor_PUSH  = Motor(OUTPUT_B)
+Motor_PUSH  = Motor(OUTPUT_D)
 print("Motor_PUSH initialized")
 
 
 
 def drive_straight_mm(dist):
-    golfbot.on_for_degrees((dist / 1000) * (360 / (wheel_diameter * 3.14159)), (dist / 1000) * (360 / (wheel_diameter * 3.14159)), speed=50)
+    golfbot.on_for_degrees(left_speed = 50, right_speed = 50, 
+                           degrees = (int)((dist) * (360 / (wheel_diameter * 3.14159))))
     golfbot.wait_until_not_moving(timeout=300)
     return
 #+ is right, - is left
 def turn_right_deg(angle_deg):
-    golfbot.turn_right(angle = angle_deg)
+    Motor_LEFT.on_for_degrees(speed=20, degrees=(int)(angle_deg * 4.0), brake=True)
+    return
 
 def turn_left_deg(angle_deg):
-    golfbot.turn_left(angle = -angle_deg)
+    Motor_RIGHT.on_for_degrees(speed=20, degrees=(int)(angle_deg * 4.0), brake=True)
+    return
 
 def open_gate():
-    Motor_GATE.on(speed=50)
+    Motor_GATE.on(speed=5)
     Motor_GATE.wait_until_not_moving(timeout=300)
     return
 
 def close_gate():
-    Motor_GATE.on(speed=-50)
+    Motor_GATE.on(speed=-5)
     Motor_GATE.wait_until_not_moving(timeout=300)
     return
 
-
 def push_out():
-    Motor_PUSH.on(speed=50)
+    Motor_PUSH.on(speed=5)
     Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def push_return():
-    Motor_PUSH.on(speed=-50)
+    Motor_PUSH.on(speed=-5)
     Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
@@ -95,14 +97,14 @@ while True:
             "Motor_RIGHT": Motor_RIGHT,
             "Motor_GATE":  Motor_GATE,
             "Motor_PUSH":  Motor_PUSH,
-            "DriveStrightDist": drive_straight_mm,
-            "TurnLeft": turn_left_deg,
-            "TurnRight": turn_right_deg,
-            "CloseGate": close_gate,
-            "OpenGate": open_gate,
-            "PushOut": push_out,
-            "PushReturn": push_return,
-            "golfbot":     golfbot              
+            "drive_straight_mm": drive_straight_mm,
+            "turn_left_deg": turn_left_deg,
+            "turn_right_deg": turn_right_deg,
+            "open_gate": open_gate,
+            "close_gate": close_gate,
+            "push_out": push_out,
+            "push_return": push_return,
+            "golfbot": golfbot           
         }
 
         try:
