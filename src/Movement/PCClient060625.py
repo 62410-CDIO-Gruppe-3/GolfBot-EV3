@@ -53,7 +53,7 @@ def build_command(key: str) -> str:
     k = key.lower()
     if k == "w":
         return f"drive_straight_mm({FORWARD_MM})\n"
-    if k == "s":
+    if k == "d":
         return f"turn_right_deg({TURN_DEG})\n"
     if k == "a":
         return f"turn_left_deg({TURN_DEG})\n"
@@ -77,7 +77,7 @@ def build_command(key: str) -> str:
 def main() -> None:
     print(
         "Press keys:\n"
-        "  W – forward   S – right   A – left\n"
+        "  W – forward   D – right   A – left\n"
         "  V – open gate C – close gate\n"
         "  P – push out  R – push return\n"
         "  X – STOP      Q – quit\n"

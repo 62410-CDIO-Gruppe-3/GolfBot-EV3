@@ -14,6 +14,7 @@ from ev3dev2.motor import MoveTank
 sound = Sound()
 
 golfbot = MoveTank(OUTPUT_A, OUTPUT_C)
+wheel_diameter = 56  # mm
 
 Motor_LEFT  = LargeMotor(OUTPUT_A)
 print("Motor_LEFT initialized")
@@ -26,33 +27,34 @@ print("Motor_PUSH initialized")
 
 
 
-def DriveStrightDist(dist):
-    golfbot.straight(-dist)
+def drive_straight_mm(dist):
+    golfbot.on_for_degrees((dist / 1000) * (360 / (wheel_diameter * 3.14159)), (dist / 1000) * (360 / (wheel_diameter * 3.14159)), speed=50)
+    golfbot.wait_until_not_moving(timeout=300)
     return
 #+ is right, - is left
-def TurnRight(angle_deg):
+def turn_right_deg(angle_deg):
     golfbot.turn_right(angle = angle_deg)
 
-def TurnLeft(angle_deg):
+def turn_left_deg(angle_deg):
     golfbot.turn_left(angle = -angle_deg)
 
-def OpenGate():
+def open_gate():
     Motor_GATE.on(speed=50)
     Motor_GATE.wait_until_not_moving(timeout=300)
     return
 
-def CloseGate():
+def close_gate():
     Motor_GATE.on(speed=-50)
     Motor_GATE.wait_until_not_moving(timeout=300)
     return
 
 
-def PushOut():
+def push_out():
     Motor_PUSH.on(speed=50)
     Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
-def PushReturn():
+def push_return():
     Motor_PUSH.on(speed=-50)
     Motor_PUSH.wait_until_not_moving(timeout=300)
     return
@@ -93,13 +95,13 @@ while True:
             "Motor_RIGHT": Motor_RIGHT,
             "Motor_GATE":  Motor_GATE,
             "Motor_PUSH":  Motor_PUSH,
-            "DriveStrightDist": DriveStrightDist,
-            "TurnLeft": TurnLeft,
-            "TurnRight": TurnRight,
-            "CloseGate": CloseGate,
-            "OpenGate": OpenGate,
-            "PushOut": PushOut,
-            "PushReturn": PushReturn,
+            "DriveStrightDist": drive_straight_mm,
+            "TurnLeft": turn_left_deg,
+            "TurnRight": turn_right_deg,
+            "CloseGate": close_gate,
+            "OpenGate": open_gate,
+            "PushOut": push_out,
+            "PushReturn": push_return,
             "golfbot":     golfbot              
         }
 
