@@ -11,8 +11,6 @@ from ev3dev2.motor import MoveTank
 # ----------------------------------------------------------------------
 # hardware
 # ----------------------------------------------------------------------
-sound = Sound()
-
 golfbot = MoveTank(OUTPUT_C, OUTPUT_B)
 wheel_diameter = 56  # mm
 
@@ -119,4 +117,3 @@ while True:
 
     except Exception as err:
         print("Error:", err)
-    sound.wait(2000)
