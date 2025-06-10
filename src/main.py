@@ -1,91 +1,84 @@
-#!/usr/bin/env pybricks-micropython
-"""
-main.py – Hovedprogram for GolfBot-EV3
-Styrer hele robotflowet: kørsel, portstyring, boldopsamling og aflevering.
-"""
-
-from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import Motor, ColorSensor, TouchSensor, UltrasonicSensor, GyroSensor
-from pybricks.parameters import Port
-from pybricks.robotics import DriveBase
-from pybricks.tools import wait
-
-from config import (
-    PORT_LEFT_MOTOR,
-    PORT_RIGHT_MOTOR,
-    PORT_GATE_MOTOR,
-    PORT_PUSH_MOTOR,
-    PORT_COLOR_SENSOR,
-    PORT_TOUCH_SENSOR,
-    PORT_ULTRASONIC_SENSOR,
-    PORT_GYRO_SENSOR,
-    DRIVE_SPEED,
-    BALL_COUNT_MAX,
-    WHEEL_DIAMETER_MM,
-    AXLE_TRACK_MM,
+from cdio_utils import (
+    InferenceConfig,
+    load_image,
+    run_inference,
+    transform_points,
+    warp_image,
+    draw_points,
 )
-from utils import open_gate, close_gate, push_balls, stop_all_motors, debug_log
+import cv2
+import numpy as np
+import os
+import time
+from pathlib import Path
+from ImageRecognition.Homography import load_homography
 
-# --- Initialisering af hardware ---
-ev3 = EV3Brick()
+# Example usage
+API_KEY = "BdmadiDKNX7YzP4unsUm"
+TRANSFORM_W, TRANSFORM_H = 1200, 1800
+OUTPUT_DIR = "transformed_images"
+HOMOGRAPHY_FILE = "homography.npy"
+TARGET_FPS = 1  # Process 5 frames per second
 
-motor_left = Motor(Port[PORT_LEFT_MOTOR])
-motor_right = Motor(Port[PORT_RIGHT_MOTOR])
-motor_gate = Motor(Port[PORT_GATE_MOTOR])
-motor_push = Motor(Port[PORT_PUSH_MOTOR])
+# Create output directory if it doesn't exist
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-sensor_color = ColorSensor(Port[PORT_COLOR_SENSOR])
-sensor_touch = TouchSensor(Port[PORT_TOUCH_SENSOR])
-sensor_ultra = UltrasonicSensor(Port[PORT_ULTRASONIC_SENSOR])
-sensor_gyro = GyroSensor(Port[PORT_GYRO_SENSOR])
-
-drivebase = DriveBase(
-    motor_left,
-    motor_right,
-    wheel_diameter=WHEEL_DIAMETER_MM,
-    axle_track=AXLE_TRACK_MM,
+config = InferenceConfig(
+    api_url="http://localhost:9001",
+    api_key=API_KEY,
+    model_id="tabletennis-ball-detection/1",
 )
 
-def drive_forward(distance_mm, speed=DRIVE_SPEED):
-    """Kør fremad en given distance i mm."""
-    debug_log(f"Kører frem: {distance_mm} mm med hastighed {speed}")
-    drivebase.straight(distance_mm)
+# Load existing homography matrix
+try:
+    H = load_homography(HOMOGRAPHY_FILE)
+except Exception as e:
+    print(f"Error loading homography: {e}")
+    exit(1)
 
-def collect_ball():
-    """Åbn port, vent, luk port – simulerer boldopsamling."""
-    open_gate(motor_gate)
-    wait(300)
-    close_gate(motor_gate)
+# Initialize video capture, Use iriun.com to get the camera working.
+cap = cv2.VideoCapture(1)
 
-def go_to_goal():
-    """Kør til målzonen (dummy-funktion – kan udvides med navigation/vision)."""
-    debug_log("Kører til målzonen...")
-    drive_forward(1000)  # Justér distance efter bane
+frame_count = 0
+last_frame_time = time.time()
+frame_interval = 1.0 / TARGET_FPS
 
-def deliver_balls(ball_count):
-    """Skub alle bolde ud én ad gangen."""
-    debug_log(f"Afleverer {ball_count} bolde...")
-    for _ in range(ball_count):
-        push_balls(motor_push)
-        wait(300)
+while True:
+    # Calculate time since last frame
+    current_time = time.time()
+    elapsed = current_time - last_frame_time
+    
+    # Skip frame if not enough time has passed
+    if elapsed < frame_interval:
+        time.sleep(0.001)  # Small sleep to prevent CPU hogging
+        continue
+    
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-def main():
-    ev3.speaker.beep()
-    debug_log("GolfBot-EV3 starter...")
+    # Update last frame time
+    last_frame_time = current_time
 
-    collected = 0
-    while collected < BALL_COUNT_MAX:
-        drive_forward(200)  # Kør frem til næste bold (justér distance)
-        collect_ball()
-        collected += 1
-        debug_log(f"Bold opsamlet ({collected}/{BALL_COUNT_MAX})")
+    # Convert frame to RGB for processing
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Process frame: run inference, transform detections, warp, and draw
+    result = run_inference(frame_rgb, config)
+    detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
+    transformed = transform_points(detections, H) if detections else []
+    warped = warp_image(frame_rgb, H, TRANSFORM_W, TRANSFORM_H)
+    warped_out = draw_points(warped, transformed)
+    
+    # Convert back to BGR for saving
+    warped_out_bgr = cv2.cvtColor(warped_out, cv2.COLOR_RGB2BGR)
+    
+    # Save the transformed frame
+    output_path = os.path.join(OUTPUT_DIR, f"frame_{frame_count:04d}.jpg")
+    cv2.imwrite(output_path, warped_out_bgr)
+    
+    frame_count += 1
 
-    go_to_goal()
-    deliver_balls(BALL_COUNT_MAX)
-
-    stop_all_motors(motor_left, motor_right, motor_gate, motor_push)
-    debug_log("GolfBot-EV3 afslutter programmet.")
-    ev3.speaker.beep()
-
-if __name__ == "__main__":
-    main()
+# Release resources
+cap.release()
+cv2.destroyAllWindows()
