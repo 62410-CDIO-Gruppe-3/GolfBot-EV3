@@ -1,99 +1,84 @@
-#!/usr/bin/env pybricks-micropython
-from pybricks.hubs import EV3Brick
-from pybricks.ev3devices import (Motor, TouchSensor, ColorSensor,
-                                 InfraredSensor, UltrasonicSensor, GyroSensor)
-from pybricks.parameters import Port, Stop, Direction, Button, Color
-from pybricks.tools import wait, StopWatch, DataLog
-from pybricks.robotics import DriveBase
-from pybricks.media.ev3dev import SoundFile, ImageFile
+from cdio_utils import (
+    InferenceConfig,
+    load_image,
+    run_inference,
+    transform_points,
+    warp_image,
+    draw_points,
+)
+import cv2
+import numpy as np
+import os
+import time
+from pathlib import Path
+from ImageRecognition.Homography import load_homography
 
+# Example usage
+API_KEY = "BdmadiDKNX7YzP4unsUm"
+TRANSFORM_W, TRANSFORM_H = 1200, 1800
+OUTPUT_DIR = "transformed_images"
+HOMOGRAPHY_FILE = "homography.npy"
+TARGET_FPS = 1  # Process 5 frames per second
 
-# This program requires LEGO EV3 MicroPython v2.0 or higher.
-# Click "Open user guide" on the EV3 extension tab for more information.
+# Create output directory if it doesn't exist
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+config = InferenceConfig(
+    api_url="http://localhost:9001",
+    api_key=API_KEY,
+    model_id="tabletennis-ball-detection/1",
+)
 
-# Create your objects here.
-ev3 = EV3Brick()
+# Load existing homography matrix
+try:
+    H = load_homography(HOMOGRAPHY_FILE)
+except Exception as e:
+    print(f"Error loading homography: {e}")
+    exit(1)
 
-#set motors for wheel:
-Motor_LEFT = Motor(Port.A)
-Motor_RIGHT = Motor(Port.D)
-Motor_GATE = Motor(Port.C)
-Motor_PUSH = Motor(Port.B)
+# Initialize video capture, Use iriun.com to get the camera working.
+cap = cv2.VideoCapture(1)
 
-#Initialize the "robot"
-golfbot = DriveBase(Motor_LEFT, Motor_RIGHT, wheel_diameter=55.5, axle_track=104)
+frame_count = 0
+last_frame_time = time.time()
+frame_interval = 1.0 / TARGET_FPS
 
-def OpenGatePushOut():
+while True:
+    # Calculate time since last frame
+    current_time = time.time()
+    elapsed = current_time - last_frame_time
+    
+    # Skip frame if not enough time has passed
+    if elapsed < frame_interval:
+        time.sleep(0.001)  # Small sleep to prevent CPU hogging
+        continue
+    
+    ret, frame = cap.read()
+    if not ret:
+        break
 
-    Motor_GATE.run(150)
-    Motor_PUSH.run(-150)
-    wait(500)
-    return
-def CloseGatePushIn():
+    # Update last frame time
+    last_frame_time = current_time
 
-    Motor_PUSH.run(150)
-    wait(300)
-    Motor_GATE.run(-150)
-    wait(300)
-    return
+    # Convert frame to RGB for processing
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    
+    # Process frame: run inference, transform detections, warp, and draw
+    result = run_inference(frame_rgb, config)
+    detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
+    transformed = transform_points(detections, H) if detections else []
+    warped = warp_image(frame_rgb, H, TRANSFORM_W, TRANSFORM_H)
+    warped_out = draw_points(warped, transformed)
+    
+    # Convert back to BGR for saving
+    warped_out_bgr = cv2.cvtColor(warped_out, cv2.COLOR_RGB2BGR)
+    
+    # Save the transformed frame
+    output_path = os.path.join(OUTPUT_DIR, f"frame_{frame_count:04d}.jpg")
+    cv2.imwrite(output_path, warped_out_bgr)
+    
+    frame_count += 1
 
-def OpenGate():
-    Motor_GATE.run(150)
-    wait(300)
-    return
-def CloseGate():
-    Motor_GATE.run(-150)
-    wait(300)
-    return
-def DriveStraight(speed):#delete?
-    #oly -100 <= speed <=100
-    Motor_LEFT.run(1*(-speed))
-    Motor_RIGHT.run(1*(-speed))
-    wait(2000)
-    return
-def DriveStraightTime(time, speed):
-    #oly -100 <= speed <=100
-    Motor_LEFT.run_time(-speed, time, then=Stop.COAST, wait=False)
-    Motor_RIGHT.run_time(-speed, time, then=Stop.COAST, wait=False)
-    return
-def DriveStrightDist(dist):
-    golfbot.straight(-dist)
-    return
-
-def TurnLeft(deg):
-    Motor_LEFT.run(deg)
-    Motor_RIGHT.run(-deg)
-    wait(500)
-    return
-#stop = False
-
-#while not stop:
-#Motor_LEFT.run(1500)
-#Motor_RIGHT.run(1500)
-
-
-ev3.speaker.beep()
-#TurnLeft(1000)
-#golfbot.dc(50)
-#Motor_LEFT.dc(-100)
-#Motor_RIGHT.dc(-100)
-
-DriveStrightDist(1000)
-#DriveStraightTime(2000, 1000)
-#DriveStraight(100)
-#OpenGatePushOut()
-#CloseGatePushIn()
-#OpenGate()
-#CloseGate()
-wait(2000)
-
-#Motor_LEFT.run_target (1500, 90)
-#Motor_RIGHT.run_target (500, 90)
-#ev3.speaker.say("project SNAFU engaged")
-#ev3.speaker.say("Take over the world")
-#ev3.speaker.play_notes(['C4/4', 'C4/4', 'G4/4', 'G4/4','C4/4'])
-
-#golfbot.straight(1000)
-"""if stop=True, shutdown"""
-
+# Release resources
+cap.release()
+cv2.destroyAllWindows()
