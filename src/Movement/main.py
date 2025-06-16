@@ -51,12 +51,12 @@ def close_gate():
 
 def push_out():
     Motor_PUSH.on(speed=-5)
-    Motor_PUSH.wait_until_not_moving(timeout=100)
+    Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def push_return():
     Motor_PUSH.on(speed=10)
-    Motor_PUSH.wait_until_not_moving(timeout=100)
+    Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 
