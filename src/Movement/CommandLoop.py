@@ -1,11 +1,14 @@
-from ImageRecognition.Homography import create_homography, save_homography
+import sys
+sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
+
+
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
-from ImageRecognition.ArrowDetection import detect_arrow_tip, get_closest_path_points
+from ImageRecognition.ArrowDetection import detect_arrow_tip
 
 from PathFinding.PointsGenerator import get_closest_path_points
 from PathFinding.PathGenerator import get_arrow_vector_x, get_arrow_vector_y, get_arrow_vector_angle, get_arrow_vector_size
 
-def collect_balls(image, arrow_template, transformed_points):
+def collect_balls(image, reference_point, transformed_points):
     """
     Create an input dictionary for the pathfinding algorithm.
 
@@ -17,8 +20,10 @@ def collect_balls(image, arrow_template, transformed_points):
     Returns:
         dict: Input dictionary containing transformed points and arrow vectors.
     """
-    transformed_points = get_transformed_points_from_image(image, transformed_points)
-    tip = detect_arrow_tip(image, arrow_template)
+    transformed_points = get_transformed_points_from_image(image)
+    reference_point = (0,0)
+
+    tip = reference_point
 
     if tip is None or transformed_points is None or len(transformed_points) == 0:
         return None
@@ -26,10 +31,10 @@ def collect_balls(image, arrow_template, transformed_points):
     input = ""
 
     closest = get_closest_path_points(transformed_points, tip, num_points=1)[0]
-    dx = get_arrow_vector_x(image, arrow_template, closest)
-    dy = get_arrow_vector_y(image, arrow_template, closest)
-    angle = get_arrow_vector_angle(image, arrow_template, transformed_points)
-    distance = get_arrow_vector_size(image, arrow_template, transformed_points)
+    dx = get_arrow_vector_x(image, tip, closest)
+    dy = get_arrow_vector_y(image, tip, closest)
+    angle = get_arrow_vector_angle(image, tip, transformed_points)
+    distance = get_arrow_vector_size(image, tip, transformed_points)
 
     if angle is range(5, 180):
         input += f"turn_left_deg({angle})\n"
@@ -46,7 +51,7 @@ def collect_balls(image, arrow_template, transformed_points):
 
     return input
 
-def move_to_goal(image, arrow_template, goal_point):
+def move_to_goal(image, reference_point, goal_point):
     """
     Create an input dictionary for the pathfinding algorithm to move to the goal.
 
@@ -58,15 +63,17 @@ def move_to_goal(image, arrow_template, goal_point):
     Returns:
         dict: Input dictionary containing transformed points and arrow vectors.
     """
-    tip = detect_arrow_tip(image, arrow_template)
+    reference_point = (0, 0)
+
+    tip = reference_point
 
     if tip is None or goal_point is None:
         return None
     
     input = ""
 
-    angle = get_arrow_vector_angle(image, arrow_template, goal_point)
-    distance = get_arrow_vector_size(image, arrow_template, goal_point)
+    angle = get_arrow_vector_angle(image, tip, goal_point)
+    distance = get_arrow_vector_size(image, tip, goal_point)
 
     if angle is range(5, 180):
         input += f"turn_left_deg({angle})\n"
@@ -74,8 +81,11 @@ def move_to_goal(image, arrow_template, goal_point):
         input += f"turn_right_deg({angle})\n"
     
     input += f"drive_straight_mm({distance - 5})\n"
+
     input += f"open_gate()\n"
+
     input += f"push_out()\n"
+
     input += f"push_return()\n"
 
     return input

@@ -1,11 +1,13 @@
 import sys
 sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
 
+import numpy as np
+
 from PathFinding.PointsGenerator import get_closest_path_points
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
 from ImageRecognition.ArrowDetection import detect_arrow_tip
 
-def get_arrow_vector(image, arrow_template, transformed_points):
+def get_arrow_vector(image, reference_point, transformed_points):
     """
     Returns a vector (dx, dy) from the arrow tip to the closest transformed point.
 
@@ -18,9 +20,9 @@ def get_arrow_vector(image, arrow_template, transformed_points):
         tuple: ((tip_x, tip_y), (closest_x, closest_y), (dx, dy)) or None if not found.
     """
 
-    transformed_points = get_transformed_points_from_image(image, transformed_points)
+    transformed_points = get_transformed_points_from_image(image)
 
-    tip = detect_arrow_tip(image, arrow_template)
+    tip = reference_point
     if tip is None or transformed_points is None or len(transformed_points) == 0:
         return None
 
@@ -29,7 +31,7 @@ def get_arrow_vector(image, arrow_template, transformed_points):
     dy = closest[1] - tip[1]
     return (tip, closest, (dx, dy))
 
-def get_arrow_vector_x(image, arrow_template, transformed_points):
+def get_arrow_vector_x(image, reference_point, transformed_points):
     """
     Returns the x component (dx) of the vector from the arrow tip to the closest transformed point.
 
@@ -41,13 +43,13 @@ def get_arrow_vector_x(image, arrow_template, transformed_points):
     Returns:
         float or None: The x component (dx) of the vector, or None if not found.
     """
-    result = get_arrow_vector(image, arrow_template, transformed_points)
+    result = get_arrow_vector(image, reference_point, transformed_points)
     if result is None:
         return None
     _, _, (dx, _) = result
     return dx
 
-def get_arrow_vector_y(image, arrow_template, transformed_points):
+def get_arrow_vector_y(image, reference_point, transformed_points):
     """
     Returns the x component (dx) of the vector from the arrow tip to the closest transformed point.
 
@@ -59,13 +61,13 @@ def get_arrow_vector_y(image, arrow_template, transformed_points):
     Returns:
         float or None: The x component (dx) of the vector, or None if not found.
     """
-    result = get_arrow_vector(image, arrow_template, transformed_points)
+    result = get_arrow_vector(image, reference_point, transformed_points)
     if result is None:
         return None
     _, _, (dy, _) = result
     return dy
 
-def get_arrow_vector_size(image, arrow_template, transformed_points):
+def get_arrow_vector_size(image, reference_point, transformed_points):
     """
     Returns the size of the vector from the arrow tip to the closest transformed point.
 
@@ -77,13 +79,13 @@ def get_arrow_vector_size(image, arrow_template, transformed_points):
     Returns:
         float or None: The size of the vector, or None if not found.
     """
-    result = get_arrow_vector(image, arrow_template, transformed_points)
+    result = get_arrow_vector(image, reference_point, transformed_points)
     if result is None:
         return None
     _, _, (dx, dy) = result
     return (dx**2 + dy**2)**0.5
 
-def get_arrow_vector_angle(image, arrow_template, transformed_points):
+def get_arrow_vector_angle(image, reference_point, transformed_points):
     """
     Returns the angle of the vector from the arrow tip to the closest transformed point.
 
@@ -95,7 +97,7 @@ def get_arrow_vector_angle(image, arrow_template, transformed_points):
     Returns:
         float or None: The angle of the vector in radians, or None if not found.
     """
-    result = get_arrow_vector(image, arrow_template, transformed_points)
+    result = get_arrow_vector(image, reference_point, transformed_points)
     if result is None:
         return None
     _, _, (dx, dy) = result

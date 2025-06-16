@@ -5,9 +5,15 @@ import threading
 import queue
 import time
 
+import os 
+import sys
+
+sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
+
 from ImageRecognition.Homography import create_homography, save_homography
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
-from ImageRecognition.ArrowDetection import detect_arrow_tip
+
+import ImageRecognition.ArrowDetection as arrow_det
 
 from PathFinding.PointsGenerator import get_closest_path_points
 from PathFinding.PathGenerator import get_arrow_vector_x, get_arrow_vector_y, get_arrow_vector_angle, get_arrow_vector_size
@@ -92,7 +98,7 @@ def send_and_receive(script: str) -> str:
 
 def build_commands_from_image(
     image, 
-    arrow_template, 
+    reference_point, 
     transformed_points, 
     action: str = "collect", 
     goal_point = None
@@ -111,78 +117,115 @@ def build_commands_from_image(
         A string with the commands, or an empty string if generation fails.
     """
     if action == "collect":
-        commands = collect_balls(image, arrow_template, transformed_points)
+        commands = collect_balls(image, reference_point, transformed_points)
     elif action == "move":
         if goal_point is None:
             raise ValueError("goal_point must be provided when action is 'move'")
-        commands = move_to_goal(image, arrow_template, goal_point)
+        commands = move_to_goal(image, reference_point, goal_point)
     else:
         commands = ""
     return commands
 
 def main():
     # Example usage
-    image = ...  # Load your image here
-    arrow_template = ...  # Load your arrow template here
-    transformed_points = get_transformed_points_from_image(image, ...)
+    image = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image5.jpg"
+    reference_point = (0, 0)  # This should be the detected arrow tip
+    tip = reference_point
+    transformed_points = get_transformed_points_from_image(image)
+    script = HELLO_SCRIPT
+    print("Sending script to EV3:", script)
+    response = send_and_receive(script)
 
     # Collect balls
-    commands = build_commands_from_image(image, arrow_template, transformed_points, action="collect")
+    commands = build_commands_from_image(image, tip, transformed_points, action="collect")
     if commands:
         print("Generated commands for collecting balls:")
         print(commands)
         response = send_and_receive(commands)
         print("Response from EV3:", response)
+    
+    script = commands
+    print("Sending commands to EV3:", script)
+    response = send_and_receive(script)
+    print("Response from EV3:", response)
 
     time.sleep(5)  # Wait for a second before next action
 
     # Move to goal
     goal_point = (100, 200)  # Example goal point
-    commands = build_commands_from_image(image, arrow_template, transformed_points, action="move", goal_point=goal_point)
+    commands = build_commands_from_image(image, tip, transformed_points, action="move", goal_point=goal_point)
+    if commands:
+        print("Generated commands for moving to goal:")
+        print(commands)
+        response = send_and_receive(commands)
+        print("Response from EV3:", response)
+    
+    script = commands
+    print("Sending commands to EV3:", script)
+    response = send_and_receive(script)
+    print("Response from EV3:", response)
+
+    time.sleep(5)  # Wait for a second before next action
+    
+    # Collect balls again
+    for i in range(5):
+        commands = build_commands_from_image(image, tip, transformed_points, action="collect")
+        if commands:
+            print(f"Generated commands for collecting balls (iteration {i+1}):")
+            print(commands)
+            response = send_and_receive(commands)
+            print("Response from EV3:", response)
+    
+    script = commands
+    print("Sending commands to EV3:", script)
+    response = send_and_receive(script)
+    print("Response from EV3:", response)
+
+    time.sleep(5)  # Wait for a second before next action        
+
+    # Move to goal again
+    commands = build_commands_from_image(image, tip, transformed_points, action="move", goal_point=goal_point)
     if commands:
         print("Generated commands for moving to goal:")
         print(commands)
         response = send_and_receive(commands)
         print("Response from EV3:", response)
 
+    script = commands
+    print("Sending commands to EV3:", script)
+    response = send_and_receive(script)
+    print("Response from EV3:", response)   
+
     time.sleep(5)  # Wait for a second before next action
-    
+
     # Collect balls again
     for i in range(5):
-        commands = build_commands_from_image(image, arrow_template, transformed_points, action="collect")
+        commands = build_commands_from_image(image, tip, transformed_points, action="collect")
         if commands:
             print(f"Generated commands for collecting balls (iteration {i+1}):")
             print(commands)
             response = send_and_receive(commands)
             print("Response from EV3:", response)
 
-    time.sleep(5)  # Wait for a second before next action        
-
-    # Move to goal again
-    commands = build_commands_from_image(image, arrow_template, transformed_points, action="move", goal_point=goal_point)
-    if commands:
-        print("Generated commands for moving to goal:")
-        print(commands)
-        response = send_and_receive(commands)
-        print("Response from EV3:", response)   
-
-    time.sleep(5)  # Wait for a second before next action
-
-    # Collect balls again
-    for i in range(5):
-        commands = build_commands_from_image(image, arrow_template, transformed_points, action="collect")
-        if commands:
-            print(f"Generated commands for collecting balls (iteration {i+1}):")
-            print(commands)
-            response = send_and_receive(commands)
-            print("Response from EV3:", response)
+    script = commands
+    print("Sending commands to EV3:", script)
+    response = send_and_receive(script)
+    print("Response from EV3:", response)
 
     time.sleep(5)  # Wait for a second before next action
     
     # Move to goal again
-    commands = build_commands_from_image(image, arrow_template, transformed_points, action="move", goal_point=goal_point)
+    commands = build_commands_from_image(image, tip, transformed_points, action="move", goal_point=goal_point)
     if commands:
         print("Generated commands for moving to goal:")
         print(commands)
         response = send_and_receive(commands)
-        print("Response from EV3:", response)    
+        print("Response from EV3:", response)
+
+    script = commands
+    print("Sending commands to EV3:", script)
+    response = send_and_receive(script)
+    print("Response from EV3:", response)    
+
+if __name__ == "__main__":
+    main()
