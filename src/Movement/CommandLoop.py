@@ -95,5 +95,7 @@ def move_to_goal(reference_point, goal_point):
     input += f"push_out()\n"
 
     input += f"push_return()\n"
+    
+    input += f"close_gate()\n"
 
     return input
