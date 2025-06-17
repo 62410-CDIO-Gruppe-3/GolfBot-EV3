@@ -67,15 +67,15 @@ while True:
     result = run_inference(frame_rgb, config)
     detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
     transformed = transform_points(detections, H) if detections else []
-    warped = warp_image(frame_rgb, H, TRANSFORM_W, TRANSFORM_H)
-    warped_out = draw_points(warped, transformed)
+    # warped = warp_image(frame_rgb, H, TRANSFORM_W, TRANSFORM_H)
+    # warped_out = draw_points(warped, transformed)
     
-    # Convert back to BGR for saving
-    warped_out_bgr = cv2.cvtColor(warped_out, cv2.COLOR_RGB2BGR)
+    # # Convert back to BGR for saving
+    # warped_out_bgr = cv2.cvtColor(warped_out, cv2.COLOR_RGB2BGR)
     
-    # Save the transformed frame
-    output_path = os.path.join(OUTPUT_DIR, f"frame_{frame_count:04d}.jpg")
-    cv2.imwrite(output_path, warped_out_bgr)
+    # # Save the transformed frame
+    # output_path = os.path.join(OUTPUT_DIR, f"frame_{frame_count:04d}.jpg")
+    # cv2.imwrite(output_path, warped_out_bgr)
     
     frame_count += 1
 

@@ -15,8 +15,7 @@ from ImageRecognition.ImagePoints import get_transformed_points_from_image
 
 import ImageRecognition.ArrowDetection as arrow_det
 
-from PathFinding.PointsGenerator import get_closest_path_points
-from PathFinding.PathGenerator import get_arrow_vector_x, get_arrow_vector_y, get_arrow_vector_angle, get_arrow_vector_size
+from PathFinding.PointsGenerator import get_closest_path_point
 
 from CommandLoop import collect_balls, move_to_goal
 
@@ -96,10 +95,9 @@ def send_and_receive(script: str) -> str:
 
 # ----------------------------------------------------------------------
 
-def build_commands_from_image(
-    image, 
+def build_commands_from_points( 
     reference_point, 
-    transformed_points, 
+    destination_points, 
     action: str = "collect", 
     goal_point = None
 ) -> str:
@@ -117,115 +115,157 @@ def build_commands_from_image(
         A string with the commands, or an empty string if generation fails.
     """
     if action == "collect":
-        commands = collect_balls(image, reference_point, transformed_points)
+        commands = collect_balls(reference_point, destination_points)
     elif action == "move":
         if goal_point is None:
             raise ValueError("goal_point must be provided when action is 'move'")
-        commands = move_to_goal(image, reference_point, goal_point)
+        commands = move_to_goal(reference_point, goal_point)
     else:
         commands = ""
     return commands
 
 def main():
     # Example usage
-    image = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image5.jpg"
+    # image = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image5.jpg"
     reference_point = (0, 0)  # This should be the detected arrow tip
     tip = reference_point
-    transformed_points = get_transformed_points_from_image(image)
+    # transformed_points = get_transformed_points_from_image(image)
+    destination_points = [(100.01, 200.01), (150.01, 250.01), (200.01, 300.01), (600.01, 200.01), (300.01, 400.01), (1000.01, 800.01), 
+                          (700.01, 700.01), (200.01,300.01), (400.01, 200.01), (800.01, 1200.01), (1500.01, 300.01)]  # Example points
     script = HELLO_SCRIPT
-    print("Sending script to EV3:", script)
+    print("Sending script to EV3:\n", script)
     response = send_and_receive(script)
 
     # Collect balls
-    commands = build_commands_from_image(image, tip, transformed_points, action="collect")
-    if commands:
-        print("Generated commands for collecting balls:")
-        print(commands)
-        response = send_and_receive(commands)
-        print("Response from EV3:", response)
+    commands = build_commands_from_points(tip, destination_points, action="collect")
+    closest_point = get_closest_path_point(destination_points, tip)  # Get the closest point
+    next_tip = closest_point  # Get the closest point
+    tip = next_tip   # Update tip to the first transformed point for next actions
+    print("Next tip (closest point):", next_tip)
+    destination_points.remove(closest_point)  # Remove the closest point from the list
+
+    print("AutonomousClient: Updated list of destinations: ", destination_points, 
+          "\n Length of destination points: ", len(destination_points),
+            "\n Former closest point:", closest_point)
     
-    script = commands
-    print("Sending commands to EV3:", script)
+    if commands:
+        # print("Generated commands for collecting balls:")
+        # print(commands)
+        # response = send_and_receive(commands)
+        # print("Response from EV3:", response)
+        script = commands
+    
+    print("Sending commands to EV3:\n", script)
     response = send_and_receive(script)
     print("Response from EV3:", response)
+    
 
-    time.sleep(5)  # Wait for a second before next action
 
     # Move to goal
     goal_point = (100, 200)  # Example goal point
-    commands = build_commands_from_image(image, tip, transformed_points, action="move", goal_point=goal_point)
+
+    commands = build_commands_from_points(tip, destination_points, action="move", goal_point=goal_point)
     if commands:
-        print("Generated commands for moving to goal:")
-        print(commands)
-        response = send_and_receive(commands)
-        print("Response from EV3:", response)
+        # print("Generated commands for moving to goal:")
+        # print(commands)
+        # response = send_and_receive(commands)
+        # print("Response from EV3:", response)
+        script = commands
     
-    script = commands
-    print("Sending commands to EV3:", script)
+    print("Sending commands to EV3:\n", script)
     response = send_and_receive(script)
     print("Response from EV3:", response)
 
     time.sleep(5)  # Wait for a second before next action
+
+    next_tip = goal_point
+    tip = next_tip
+    print("Next tip (closest point):", tip, "Goal point:", goal_point)
     
     # Collect balls again
     for i in range(5):
-        commands = build_commands_from_image(image, tip, transformed_points, action="collect")
+        commands = build_commands_from_points(tip, destination_points, action="collect")
+        closest_point = get_closest_path_point(destination_points, tip) # Get the closest point
+        next_tip = closest_point  # Get the closest point
+        print("Next tip (closest point):", next_tip)
+        tip = next_tip  # Update tip to the first transformed point for next action
+        destination_points.remove(closest_point)  # Remove the closest point from the lists
+        print("Updated tip for next actions:", tip)
+        print("AutonomousClient: Updated list of destinations: ", destination_points, 
+          "\n Length of destination points: ", len(destination_points),
+            "\n Former closest point:", closest_point)
+
         if commands:
             print(f"Generated commands for collecting balls (iteration {i+1}):")
-            print(commands)
-            response = send_and_receive(commands)
-            print("Response from EV3:", response)
-    
-    script = commands
-    print("Sending commands to EV3:", script)
-    response = send_and_receive(script)
-    print("Response from EV3:", response)
+            # print(commands)
+            # response = send_and_receive(commands)
+            # print("Response from EV3:", response)
+            script = commands
+        
+        print("Sending commands to EV3:\n", script)
+        response = send_and_receive(script)
+        print("Response from EV3:", response)
 
     time.sleep(5)  # Wait for a second before next action        
 
     # Move to goal again
-    commands = build_commands_from_image(image, tip, transformed_points, action="move", goal_point=goal_point)
+    commands = build_commands_from_points(tip, destination_points, action="move", goal_point=goal_point)
     if commands:
         print("Generated commands for moving to goal:")
-        print(commands)
-        response = send_and_receive(commands)
-        print("Response from EV3:", response)
+        #print(commands)
+        #response = send_and_receive(commands)
+        #print("Response from EV3:", response)
+        script = commands
 
-    script = commands
     print("Sending commands to EV3:", script)
     response = send_and_receive(script)
-    print("Response from EV3:", response)   
+    print("Response from EV3:", response)
+
+    next_tip = goal_point  # Update tip to goal point after moving
+    tip = next_tip  # Update tip to goal point after moving
+    print("Next tip (closest point):", tip, "Goal point:", goal_point)   
 
     time.sleep(5)  # Wait for a second before next action
 
     # Collect balls again
     for i in range(5):
-        commands = build_commands_from_image(image, tip, transformed_points, action="collect")
+        commands = build_commands_from_points(tip, destination_points, action="collect")
+        closest_point = get_closest_path_point(destination_points, tip) # Get the closest point
+        next_tip = closest_point  # Get the closest point
+        print("Next tip (closest point):", next_tip)
+        tip = next_tip  # Update tip to the first transformed point for next action
+        destination_points.remove(closest_point)  # Remove the closest point from the lists
+        print("Updated tip for next actions:", tip)
+        print("AutonomousClient: Updated list of destinations: ", destination_points, 
+          "\n Length of destination points: ", len(destination_points),
+            "\n Former closest point:", closest_point)
+
         if commands:
             print(f"Generated commands for collecting balls (iteration {i+1}):")
-            print(commands)
-            response = send_and_receive(commands)
-            print("Response from EV3:", response)
+            # print(commands)
+            # response = send_and_receive(commands)
+            # print("Response from EV3:", response)
+            script = commands
+        
+        print("Sending commands to EV3:\n", script)
+        response = send_and_receive(script)
+        print("Response from EV3:", response)
 
-    script = commands
+    time.sleep(5)  # Wait for a second before next action        
+    
+    # Move to goal again
+    commands = build_commands_from_points(tip, destination_points, action="move", goal_point=goal_point)
+    if commands:
+        print("Generated commands for moving to goal:")
+        #print(commands)
+        #response = send_and_receive(commands)
+        #print("Response from EV3:", response)
+        script = commands
+
     print("Sending commands to EV3:", script)
     response = send_and_receive(script)
     print("Response from EV3:", response)
 
-    time.sleep(5)  # Wait for a second before next action
-    
-    # Move to goal again
-    commands = build_commands_from_image(image, tip, transformed_points, action="move", goal_point=goal_point)
-    if commands:
-        print("Generated commands for moving to goal:")
-        print(commands)
-        response = send_and_receive(commands)
-        print("Response from EV3:", response)
-
-    script = commands
-    print("Sending commands to EV3:", script)
-    response = send_and_receive(script)
-    print("Response from EV3:", response)    
 
 if __name__ == "__main__":
     main()

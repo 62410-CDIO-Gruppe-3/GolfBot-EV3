@@ -5,36 +5,23 @@ import numpy as np
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
 from ImageRecognition.ArrowDetection import detect_arrow_tip
 
-def get_closest_path_points(transformed_points, reference_point, num_points=1):
+def get_closest_path_point(destination_points, reference_point) -> tuple[int, int]:
     """
-    Given a list of transformed points and a reference point,
-    return the path of the five closest points to the reference point.
-
+    Return the single closest point from 'points' relative to the 'reference' point.
+    
     Args:
-        transformed_points (list or np.ndarray): List of (x, y) tuples or Nx2 array.
-        reference_point (tuple): (x, y) coordinates to measure distance from.
-        num_points (int): Number of closest points to return.
-
+        points: A list of (x, y) tuples.
+        reference: The reference (x, y) point.
+        
     Returns:
-        list: List of the five closest (x, y) points.
+        The (x, y) tuple from destination_points that is closest to the reference.
     """
-    # Convert to numpy array for easier computation
-    points = np.array(transformed_points)
-    ref = np.array(reference_point)
-
-    # Compute Euclidean distances
-    distances = np.linalg.norm(points - ref, axis=1)
-
-    # Get indices of the closest points
-    closest_indices = np.argsort(distances)[:num_points]
-
-    # Return the closest points as a list of tuples
-    return [tuple(points[i]) for i in closest_indices]
+    return min(destination_points, key=lambda p: (p[0] - reference_point[0])**2 + (p[1] - reference_point[1])**2)
 
 # Example usage:
 if __name__ == "__main__":
     # Get transformed points from ImageRecognition using the getter
     transformed_points = get_transformed_points_from_image()
     reference_point = detect_arrow_tip()  # Replace with your actual reference point
-    closest_points = get_closest_path_points(transformed_points, reference_point)
+    closest_points = get_closest_path_point(transformed_points, reference_point)
     print(closest_points)

@@ -5,10 +5,11 @@ sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
 from ImageRecognition.ArrowDetection import detect_arrow_tip
 
-from PathFinding.PointsGenerator import get_closest_path_points
-from PathFinding.PathGenerator import get_arrow_vector_x, get_arrow_vector_y, get_arrow_vector_angle, get_arrow_vector_size
+from PathFinding.PointsGenerator import get_closest_path_point
+from PathFinding.ArrowVector import ArrowVector
 
-def collect_balls(image, reference_point, transformed_points):
+
+def collect_balls(reference_point, destination_points):
     """
     Create an input dictionary for the pathfinding algorithm.
 
@@ -20,38 +21,42 @@ def collect_balls(image, reference_point, transformed_points):
     Returns:
         dict: Input dictionary containing transformed points and arrow vectors.
     """
-    transformed_points = get_transformed_points_from_image(image)
-    reference_point = (0,0)
 
     tip = reference_point
 
-    if tip is None or transformed_points is None or len(transformed_points) == 0:
+    if tip is None or destination_points is None or len(destination_points) == 0:
         return None
-    
-    input = ""
 
-    closest = get_closest_path_points(transformed_points, tip, num_points=1)[0]
-    dx = get_arrow_vector_x(image, tip, closest)
-    dy = get_arrow_vector_y(image, tip, closest)
-    angle = get_arrow_vector_angle(image, tip, transformed_points)
-    distance = get_arrow_vector_size(image, tip, transformed_points)
+    closest = get_closest_path_point(destination_points, tip)
+    vector = ArrowVector(tip, closest)
+    distance = vector.get_size()
+    angle = vector.get_angle()
+    normalized_angle = angle % 360  # Normalize angle to [0, 360)
 
-    if angle is range(5, 180):
-        input += f"turn_left_deg({angle})\n"
-    elif angle is range(185, 360):
-        input += f"turn_right_deg({angle})\n"
+    print("Tip of the robot: ", tip, "\n Destination: ", closest)
+
+    print(f"Distance: {distance}, Angle: {angle}, Normalized Angle: {normalized_angle}")
+
+    if normalized_angle < 180:
+        input = f"turn_left_deg({normalized_angle})\n"
+    else:
+        input = f"turn_right_deg({normalized_angle})\n"
 
     input += f"drive_straight_mm({distance - 50})\n"
 
     input += f"open_gate()\n"
 
-    input += f"drive_straight_mm(50)\n"
+    input += f"drive_straight_mm({50})\n"
 
     input += f"close_gate()\n"
 
+    print(f"CommandLoop: Remaining destination points: {destination_points}", 
+          "\n Length of destination points:", len(destination_points), 
+          "\n Removed former closest point:", closest)
+
     return input
 
-def move_to_goal(image, reference_point, goal_point):
+def move_to_goal(reference_point, goal_point):
     """
     Create an input dictionary for the pathfinding algorithm to move to the goal.
 
@@ -63,22 +68,25 @@ def move_to_goal(image, reference_point, goal_point):
     Returns:
         dict: Input dictionary containing transformed points and arrow vectors.
     """
-    reference_point = (0, 0)
 
     tip = reference_point
 
     if tip is None or goal_point is None:
         return None
-    
-    input = ""
 
-    angle = get_arrow_vector_angle(image, tip, goal_point)
-    distance = get_arrow_vector_size(image, tip, goal_point)
+    vector = ArrowVector(tip, goal_point)
+    distance = vector.get_size()
+    angle = vector.get_angle()
+    normalized_angle = (angle + 360) % 360  # Normalize angle to [0, 360)
 
-    if angle is range(5, 180):
-        input += f"turn_left_deg({angle})\n"
-    elif angle is range(185, 360):
-        input += f"turn_right_deg({angle})\n"
+    print("Tip of the robot: ", tip, "\n Goal: ", goal_point)
+     
+    print(f"Distance: {distance}, Angle: {angle}, Normalized Angle: {normalized_angle}")
+
+    if normalized_angle < 180:
+        input = f"turn_left_deg({normalized_angle})\n"
+    else:
+        input = f"turn_right_deg({normalized_angle})\n"
     
     input += f"drive_straight_mm({distance - 5})\n"
 
@@ -89,4 +97,3 @@ def move_to_goal(image, reference_point, goal_point):
     input += f"push_return()\n"
 
     return input
-
