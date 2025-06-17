@@ -61,7 +61,7 @@ def reverse_drive_mm(distance_mm: float,
                   brake:     bool  = True,
                   block:     bool  = True) -> None:
     """Drive backward for *distance_mm* (positive value)."""
-    drive_mm(-abs(distance_mm), speed_rpm, ramp_ms, brake, block)
+    drive_straight_mm(-abs(distance_mm), speed_rpm, ramp_ms, brake, block)
 
 def turn_deg(angle_deg: float,
              speed_rpm: float = 40,
@@ -155,8 +155,6 @@ while True:
         exec_namespace = {
             #"ev3": ev3,
             #"wait": wait_until_not_moving,
-            "Motor_LEFT":  Motor_LEFT,          
-            "Motor_RIGHT": Motor_RIGHT,
             "Motor_GATE":  Motor_GATE,
             "Motor_PUSH":  Motor_PUSH,
             "drive_straight_mm": drive_straight_mm,
@@ -168,7 +166,6 @@ while True:
             "close_gate": close_gate,
             "push_out": push_out,
             "push_return": push_return,
-            "golfbot": golfbot           
         }
 
         try:
