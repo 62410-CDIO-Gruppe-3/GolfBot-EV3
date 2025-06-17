@@ -21,7 +21,7 @@ from CommandLoop import collect_balls, move_to_goal
 
 
 print_lock = threading.Lock()
-EV3_IP = "192.168.199.36"   # ← IP address of your brick
+EV3_IP = "192.168.147.36"   # ← IP address of your brick
 PORT = 5532                  # Must match the server's port
 TIMEOUT = 5.0               # Timeout in seconds for socket operations
 MAX_RETRIES = 3             # Maximum number of connection retries

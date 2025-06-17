@@ -8,6 +8,8 @@ import socket, _thread, time
 from queue import Queue
 
 # ── Imports ───────────────────────────────────────────────────────────
+from ev3dev2.tool import Tool
+
 from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveDifferential, SpeedRPM
 from ev3dev2.wheel import Wheel
 #!/usr/bin/env pybricks-micropython
@@ -121,42 +123,62 @@ def stop_drive(brake: bool = True) -> None:
 
 
 def turn_right_deg(angle_deg):
+    Motor_GATE.off()  # Ensure gate motor is off after turning
+    Motor_PUSH.off()  # Ensure push motor is off after turning
     turn_deg(angle_deg)
+    Motor_GATE.wait_until_not_moving(timeout=300)
+    Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def turn_left_deg(angle_deg):
+    Motor_GATE.off()  # Ensure gate motor is off after turning
+    Motor_PUSH.off()  # Ensure push motor is off after turning
     turn_deg(-angle_deg)
+    Motor_GATE.wait_until_not_moving(timeout=300)
+    Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def open_gate():
-    wait_until_stopped(timeout_ms=300)  # Ensure motors are stopped before opening
+    mdiff.off(brake=True)  # Stop the drive motors before opening the gate
+    Motor_PUSH.off()  # Ensure push motor is off before opening the gate
     Motor_GATE.on(speed=5)
-    Motor_GATE.wait_until_not_moving(timeout=300)
+    Motor_GATE.wait_until_not_moving(timeout=300)  # Wait for gate motor to stop
+    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
+    Motor_GATE.wait_until_not_moving(timeout=300)  # Wait for gate motor to stop
     return
 
 def close_gate():
-    wait_until_stopped(timeout_ms=300)  # Ensure motors are stopped before closing
+    mdiff.off(brake=True)  # Stop the drive motors before closing the gate
+    Motor_PUSH.off()  # Ensure push motor is off before closing the gate
     Motor_GATE.on(speed=-5)
     Motor_GATE.wait_until_not_moving(timeout=300)
+    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
+    Motor_GATE.wait_until_not_moving(timeout=300)  # Wait for gate motor to stop
     return
 
 def push_out():
-    wait_until_stopped(timeout_ms=300)  # Ensure motors are stopped before pushing out
+    mdiff.off(brake=True)  # Stop the drive motors before pushing out
+    Motor_GATE.off()  # Ensure gate motor is off before pushing out
     Motor_PUSH.on(speed=-5)
     Motor_PUSH.wait_until_not_moving(timeout=300)
+    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
+    Motor_PUSH.wait_until_not_moving(timeout=300)  # Wait for push motor to stop
     return
 
 def push_return():
-    wait_until_stopped(timeout_ms=300)  # Ensure motors are stopped before returning
+    mdiff.off(brake=True)  # Stop the drive motors before pushing back
+    Motor_GATE.off()  # Ensure gate motor is off before pushing back
     Motor_PUSH.on(speed=5)
     Motor_PUSH.wait_until_not_moving(timeout=300)
+    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
+    Motor_PUSH.wait_until_not_moving(timeout=300)  # Wait for push motor to stop
     return
 
 
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
-HOST = "192.168.199.36"          # listen on all interfaces
+HOST = "192.168.147.36"          # listen on all interfaces
 PORT = 5532       # free port
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
