@@ -21,12 +21,12 @@ from CommandLoop import collect_balls, move_to_goal
 
 
 print_lock = threading.Lock()
-EV3_IP = "192.168.147.36"   # ← IP address of your brick
+EV3_IP = "192.168.199.36"   # ← IP address of your brick
 PORT = 5532                  # Must match the server's port
 TIMEOUT = 5.0               # Timeout in seconds for socket operations
 MAX_RETRIES = 3             # Maximum number of connection retries
 
-HELLO_SCRIPT = 'print("Hello from PC Client")\n'
+
 
 # --- movement parameters ----------------------------------------------
 FORWARD_MM = 500    # positive = forward (edit to suit)
@@ -132,9 +132,7 @@ def main():
     # transformed_points = get_transformed_points_from_image(image)
     destination_points = [(100.01, 200.01), (150.01, 250.01), (200.01, 300.01), (600.01, 200.01), (300.01, 400.01), (1000.01, 800.01), 
                           (700.01, 700.01), (200.01,300.01), (400.01, 200.01), (800.01, 1200.01), (1500.01, 300.01)]  # Example points
-    script = HELLO_SCRIPT
-    print("Sending script to EV3:\n", script)
-    response = send_and_receive(script)
+    #script = ""
 
     # Collect balls
     commands = build_commands_from_points(tip, destination_points, action="collect")

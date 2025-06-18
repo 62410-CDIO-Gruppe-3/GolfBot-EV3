@@ -8,7 +8,7 @@ import socket, _thread, time
 from queue import Queue
 
 # ── Imports ───────────────────────────────────────────────────────────
-from ev3dev2.tool import Tool
+#from ev3dev2.tool import Tool
 
 from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveDifferential, SpeedRPM
 from ev3dev2.wheel import Wheel
@@ -178,7 +178,7 @@ def push_return():
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
-HOST = "192.168.147.36"          # listen on all interfaces
+HOST = "192.168.199.36"          # listen on all interfaces
 PORT = 5532       # free port
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
