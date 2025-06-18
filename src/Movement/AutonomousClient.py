@@ -10,9 +10,12 @@ import sys
 
 sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
 
+import math
+
 from ImageRecognition.Homography import create_homography, save_homography
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
-
+from BallTracker import get_latest_transformed
+from RobotPosition import _largest_blob_center, get_robot_pose
 import ImageRecognition.ArrowDetection as arrow_det
 
 from PathFinding.PointsGenerator import get_closest_path_point
@@ -127,12 +130,14 @@ def build_commands_from_points(
 def main():
     # Example usage
     # image = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image5.jpg"
-    reference_point = (0, 0)  # This should be the detected arrow tip
-    tip = reference_point
+    # reference_point = (0, 0)  # This should be the detected arrow tip
+    x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+    tip = (x,y)  # Get the robot's current position (cx, cy)
     # transformed_points = get_transformed_points_from_image(image)
-    destination_points = [(100.01, 200.01), (150.01, 250.01), (200.01, 300.01), (600.01, 200.01), (300.01, 400.01), (1000.01, 800.01), 
-                          (700.01, 700.01), (200.01,300.01), (400.01, 200.01), (800.01, 1200.01), (1500.01, 300.01)]  # Example points
-    #script = ""
+    destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
+    script = HELLO_SCRIPT
+    print("Sending script to EV3:\n", script)
+    response = send_and_receive(script)
 
     # Collect balls
     commands = build_commands_from_points(tip, destination_points, action="collect")
@@ -158,6 +163,11 @@ def main():
     print("Response from EV3:", response)
     
 
+    time.sleep(1)  # Wait for a second before next action
+    x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+    tip = (math.sin(angle)*x,math.cos(angle)*y)  # Get the robot's current position (cx, cy)   print("Next tip (closest point):", next_tip)
+    
+    destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
 
     # Move to goal
     goal_point = (100, 200)  # Example goal point
@@ -174,20 +184,20 @@ def main():
     response = send_and_receive(script)
     print("Response from EV3:", response)
 
-    time.sleep(5)  # Wait for a second before next action
-
-    next_tip = goal_point
-    tip = next_tip
+    time.sleep(1)  # Wait for a second before next action
+    x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+    tip = (math.sin(angle)*x,math.cos(angle)*y)  # Get the robot's current position (cx, cy)   print("Next tip (closest point):", next_tip)
+    destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
     print("Next tip (closest point):", tip, "Goal point:", goal_point)
     
     # Collect balls again
     for i in range(5):
         commands = build_commands_from_points(tip, destination_points, action="collect")
         closest_point = get_closest_path_point(destination_points, tip) # Get the closest point
-        next_tip = closest_point  # Get the closest point
-        print("Next tip (closest point):", next_tip)
-        tip = next_tip  # Update tip to the first transformed point for next action
-        destination_points.remove(closest_point)  # Remove the closest point from the lists
+        time.sleep(1)  # Wait for a second before next action
+        x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+        tip = (math.sin(angle)*x,math.cos(angle)*y)  # Get the robot's current position (cx, cy)   print("Next tip (closest point):", next_tip)
+        destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
         print("Updated tip for next actions:", tip)
         print("AutonomousClient: Updated list of destinations: ", destination_points, 
           "\n Length of destination points: ", len(destination_points),
@@ -219,9 +229,11 @@ def main():
     response = send_and_receive(script)
     print("Response from EV3:", response)
 
-    next_tip = goal_point  # Update tip to goal point after moving
-    tip = next_tip  # Update tip to goal point after moving
-    print("Next tip (closest point):", tip, "Goal point:", goal_point)   
+    time.sleep(1)  # Wait for a second before next action
+    x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+    tip = (math.sin(angle)*x,math.cos(angle)*y)  # Get the robot's current position (cx, cy)   print("Next tip (closest point):", next_tip)
+    destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
+    print("Next tip (closest point):", tip, "Goal point:", goal_point)
 
     time.sleep(5)  # Wait for a second before next action
 
@@ -229,10 +241,10 @@ def main():
     for i in range(5):
         commands = build_commands_from_points(tip, destination_points, action="collect")
         closest_point = get_closest_path_point(destination_points, tip) # Get the closest point
-        next_tip = closest_point  # Get the closest point
-        print("Next tip (closest point):", next_tip)
-        tip = next_tip  # Update tip to the first transformed point for next action
-        destination_points.remove(closest_point)  # Remove the closest point from the lists
+        time.sleep(1)  # Wait for a second before next action
+        x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+        tip = (math.sin(angle)*x,math.cos(angle)*y)  # Get the robot's current position (cx, cy)   print("Next tip (closest point):", next_tip)
+        destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
         print("Updated tip for next actions:", tip)
         print("AutonomousClient: Updated list of destinations: ", destination_points, 
           "\n Length of destination points: ", len(destination_points),
@@ -263,6 +275,12 @@ def main():
     print("Sending commands to EV3:", script)
     response = send_and_receive(script)
     print("Response from EV3:", response)
+
+    time.sleep(1)  # Wait for a second before next action
+    x, y, *angle = get_robot_pose()  # Get the robot's current position (x, y) and angle
+    tip = (math.sin(angle)*x,math.cos(angle)*y)  # Get the robot's current position (cx, cy)   print("Next tip (closest point):", next_tip)
+    destination_points = get_latest_transformed()  # Get the latest transformed points from the queue
+    print("Next tip (closest point):", tip, "Goal point:", goal_point)
 
 
 if __name__ == "__main__":

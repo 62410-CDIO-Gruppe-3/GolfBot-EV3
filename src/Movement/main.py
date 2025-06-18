@@ -8,8 +8,6 @@ import socket, _thread, time
 from queue import Queue
 
 # ── Imports ───────────────────────────────────────────────────────────
-#from ev3dev2.tool import Tool
-
 from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveDifferential, SpeedRPM
 from ev3dev2.wheel import Wheel
 #!/usr/bin/env pybricks-micropython
