@@ -5,20 +5,6 @@ import threading
 import queue
 import time
 
-import os 
-import sys
-
-sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
-
-from ImageRecognition.Homography import create_homography, save_homography
-from ImageRecognition.ImagePoints import get_transformed_points_from_image
-
-import ImageRecognition.ArrowDetection as arrow_det
-
-from PathFinding.PointsGenerator import get_closest_path_point
-
-from CommandLoop import collect_balls, move_to_goal
-
 
 print_lock = threading.Lock()
 EV3_IP = "192.168.199.36"   # ← IP address of your brick

@@ -5,11 +5,6 @@ import threading
 import queue
 import time
 
-import os 
-import sys
-
-sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
-
 from ImageRecognition.Homography import create_homography, save_homography
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
 
@@ -128,7 +123,7 @@ def robot_move_to_goal(
             iteration=i
         )
         if command:
-            print("GOAL: Generated command for iteration: {}", i + 1)
+            print("GOAL: Generated command for iteration: ", i + 1 )
             print(command)
             script = command
             response = send_and_receive(script)
@@ -167,6 +162,8 @@ def repeat_collection(
         time.sleep(1)
     time.sleep(2)  
     return
+
+# ----------------------------------------------------------------------
 
 def main():
     reference_point = (0, 0)  # This should be the detected arrow tip

@@ -1,6 +1,3 @@
-import sys
-sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
-
 import numpy as np
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
 from ImageRecognition.ArrowDetection import detect_arrow_tip

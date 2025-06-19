@@ -1,6 +1,3 @@
-import sys
-sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
-
 import math
 
 class ArrowVector:

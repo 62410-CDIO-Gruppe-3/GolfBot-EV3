@@ -1,10 +1,3 @@
-import sys
-sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
-
-
-from ImageRecognition.ImagePoints import get_transformed_points_from_image
-from ImageRecognition.ArrowDetection import detect_arrow_tip
-
 from PathFinding.PointsGenerator import get_closest_path_point
 from PathFinding.ArrowVector import ArrowVector
 
