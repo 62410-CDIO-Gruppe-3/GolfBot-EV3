@@ -1,8 +1,10 @@
+import math
+
 from PathFinding.PointsGenerator import get_closest_path_point
 from PathFinding.ArrowVector import ArrowVector
 
 
-def collect_balls(reference_point, destination_points, iteration: int = 0):
+def collect_balls(reference_point, destination_point, iteration: int = 0):
     """
     Create an input dictionary for the pathfinding algorithm.
 
@@ -15,26 +17,23 @@ def collect_balls(reference_point, destination_points, iteration: int = 0):
         dict: Input dictionary containing transformed points and arrow vectors.
     """
 
-    tip = reference_point
-
-    if tip is None or destination_points is None or len(destination_points) == 0:
+    if reference_point is None or destination_point is None:
         return None
-
-    closest = get_closest_path_point(destination_points, tip)
-    vector = ArrowVector(tip, closest)
+    
+    vector = ArrowVector(reference_point, destination_point)
     distance = vector.get_size()
     angle = vector.get_angle()
 
-    print("Tip of the robot: ", tip, "\n Destination: ", closest)
+    print("Tip of the robot: ", reference_point, "\n Destination: ", destination_point)
 
     print(f"Distance: {distance}, Angle: {angle}")
 
     match iteration:
         case 0:
             if 0 < angle < 180.0:
-                    input = f"turn_right_deg({angle})\n"
-            else:
                     input = f"turn_left_deg({angle})\n"
+            else:
+                    input = f"turn_right_deg({math.abs(angle)})\n"
         case 1:
                 input = f"drive_straight_mm({distance - 50})\n"
         case 2:  
@@ -60,26 +59,23 @@ def move_to_goal(reference_point, goal_point, iteration: int = 0):
         dict: Input dictionary containing transformed points and arrow vectors.
     """
 
-    tip = reference_point
-
-    if tip is None or goal_point is None:
+    if reference_point is None or goal_point is None:
         return None
 
-    vector = ArrowVector(tip, goal_point)
+    vector = ArrowVector(reference_point, goal_point)
     distance = vector.get_size()
     angle = vector.get_angle()
-    normalized_angle = (angle + 360) % 360  # Normalize angle to [0, 360)
 
-    print("Tip of the robot: ", tip, "\n Goal: ", goal_point)
+    print("Tip of the robot: ", reference_point, "\n Goal: ", goal_point)
      
-    print(f"Distance: {distance}, Angle: {angle}, Normalized Angle: {normalized_angle}")
+    print(f"Distance: {distance}, Angle: {angle}")
 
     match iteration:
         case 0:
-            if angle < 180.0:
+            if 0 < angle < 180.0:
                     input = f"turn_left_deg({angle})\n"
             else:
-                    input = f"turn_right_deg({360 - angle})\n"
+                    input = f"turn_right_deg({angle})\n"
         case 1:
                 input = f"drive_straight_mm({150})\n"
         case 2:

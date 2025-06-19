@@ -87,18 +87,17 @@ def send_and_receive(script: str) -> str:
 
 def collect_VIP_ball(    
     reference_point, 
-    destination_points, 
-    action: str = "collect", 
+    destination_point, 
     iterations: int = 6
 ) -> None:
     for i in range(iterations):
         command = collect_balls(    
             reference_point, 
-            destination_points, 
+            destination_point, 
             iteration=i
         )
         if command:
-            print(f"Generated commands for {action} (iteration {i+1}):")
+            print(f"Generated commands for collecting the VIP Ball (iteration {i+1}):")
             print(command)
             script = command
             response = send_and_receive(script)
@@ -119,7 +118,7 @@ def robot_move_to_goal(
             iteration=i
         )
         if command:
-            print("GOAL: Generated command for iteration: ", i + 1 )
+            print(f"GOAL: Generated command for iteration: {i+1}" )
             print(command)
             script = command
             response = send_and_receive(script)
@@ -130,17 +129,16 @@ def robot_move_to_goal(
 
 def repeat_collection(
     reference_point, 
-    destination_points,
+    destination_point,
     inner_iteration: int = 6,
     outer_iteration: int = 5
 ) -> None:
     tip = reference_point
     for i in range(outer_iteration):
-        closest_point = get_closest_path_point(destination_points, tip)
         for j in range(inner_iteration):
             command = collect_balls(
                 tip,
-                destination_points,
+                destination_point,
                 iteration=j)
             if command:
                 print(f"Generated command for iterations: (outer {i+1}, inner {j+1}):")
@@ -148,13 +146,7 @@ def repeat_collection(
                 script = command
                 response = send_and_receive(script)
                 print("Response from EV3:", response)
-        next_tip = closest_point
-        print("Next tip (closest point):", next_tip)
-        tip = next_tip
-        destination_points.remove(closest_point)
-        print("AutonomousClient: Updated list of destinations: ", destination_points, 
-          "\n Length of destination points: ", len(destination_points),
-            "\n Former closest point:", closest_point)
+        print("AutonomousClient: Collecting ball at destination: ", destination_point)
         time.sleep(1)
     time.sleep(2)  
     return
