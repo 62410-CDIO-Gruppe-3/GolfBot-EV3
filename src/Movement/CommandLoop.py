@@ -1,15 +1,8 @@
-import sys
-sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
-
-
-from ImageRecognition.ImagePoints import get_transformed_points_from_image
-from ImageRecognition.ArrowDetection import detect_arrow_tip
-
 from PathFinding.PointsGenerator import get_closest_path_point
 from PathFinding.ArrowVector import ArrowVector
 
 
-def collect_balls(reference_point, destination_points):
+def collect_balls(reference_point, destination_points, iteration: int = 0):
     """
     Create an input dictionary for the pathfinding algorithm.
 
@@ -31,32 +24,30 @@ def collect_balls(reference_point, destination_points):
     vector = ArrowVector(tip, closest)
     distance = vector.get_size()
     angle = vector.get_angle()
-    normalized_angle = angle % 360  # Normalize angle to [0, 360)
 
     print("Tip of the robot: ", tip, "\n Destination: ", closest)
 
-    print(f"Distance: {distance}, Angle: {angle}, Normalized Angle: {normalized_angle}")
+    print(f"Distance: {distance}, Angle: {angle}")
 
-    if normalized_angle < 180:
-        input = f"turn_left_deg({normalized_angle})\n"
-    else:
-        input = f"turn_right_deg({normalized_angle})\n"
-
-    input += f"drive_straight_mm({distance - 50})\n"
-
-    input += f"open_gate()\n"
-
-    input += f"drive_straight_mm({50})\n"
-
-    input += f"close_gate()\n"
-
-    print(f"CommandLoop: Remaining destination points: {destination_points}", 
-          "\n Length of destination points:", len(destination_points), 
-          "\n Removed former closest point:", closest)
-
+    match iteration:
+        case 0:
+            if 0 < angle < 180.0:
+                    input = f"turn_right_deg({angle})\n"
+            else:
+                    input = f"turn_left_deg({angle})\n"
+        case 1:
+                input = f"drive_straight_mm({distance - 50})\n"
+        case 2:  
+                input = f"open_gate()\n"
+        case 3:
+                input = f"drive_straight_mm({50})\n"
+        case 4:
+                input = f"stop_drive()\n"
+        case 5:
+                input = f"close_gate()\n"
     return input
 
-def move_to_goal(reference_point, goal_point):
+def move_to_goal(reference_point, goal_point, iteration: int = 0):
     """
     Create an input dictionary for the pathfinding algorithm to move to the goal.
 
@@ -83,19 +74,24 @@ def move_to_goal(reference_point, goal_point):
      
     print(f"Distance: {distance}, Angle: {angle}, Normalized Angle: {normalized_angle}")
 
-    if normalized_angle < 180:
-        input = f"turn_left_deg({normalized_angle})\n"
-    else:
-        input = f"turn_right_deg({normalized_angle})\n"
-    
-    input += f"drive_straight_mm({distance - 5})\n"
-
-    input += f"open_gate()\n"
-
-    input += f"push_out()\n"
-
-    input += f"push_return()\n"
-    
-    input += f"close_gate()\n"
-
+    match iteration:
+        case 0:
+            if angle < 180.0:
+                    input = f"turn_left_deg({angle})\n"
+            else:
+                    input = f"turn_right_deg({360 - angle})\n"
+        case 1:
+                input = f"drive_straight_mm({150})\n"
+        case 2:
+                input = f"stop_drive()\n"
+        case 3:
+                input = f"open_gate()\n"
+        case 4:
+                input = f"push_out()\n"
+        case 5:
+                input = f"push_return()\n"
+        case 6:
+                input = f"drive_straight_mm({-50})\n"
+        case 7:
+                input = f"close_gate()\n"   
     return input
