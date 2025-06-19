@@ -21,7 +21,7 @@ from CommandLoop import collect_balls, move_to_goal
 
 
 print_lock = threading.Lock()
-EV3_IP = "192.168.147.36"   # ← IP address of your brick
+EV3_IP = "192.168.199.36"   # ← IP address of your brick
 PORT = 5532                  # Must match the server's port
 TIMEOUT = 5.0               # Timeout in seconds for socket operations
 MAX_RETRIES = 3             # Maximum number of connection retries
@@ -92,179 +92,170 @@ def send_and_receive(script: str) -> str:
                 sock.close()
             except:
                 pass
-
 # ----------------------------------------------------------------------
-
-def build_commands_from_points( 
+def collect_VIP_ball(    
     reference_point, 
     destination_points, 
     action: str = "collect", 
-    goal_point = None
-) -> str:
-    """
-    Generate movement commands from image recognition inputs.
+    iterations: int = 8
+) -> None:
+    for i in range(iterations):
+        command = collect_balls(    
+            reference_point, 
+            destination_points, 
+            iteration=i
+        )
+        if command:
+            print(f"Generated commands for {action} (iteration {i+1}):")
+            print(command)
+            script = command
+            response = send_and_receive(script)
+            print("Response from EV3:", response)
+            time.sleep(1)
+    print("Collect VIP ball completed.")
+    time.sleep(2)  
+    return
 
-    Args:
-        image: The current image frame (BGR).
-        arrow_template: Grayscale image of the arrow template.
-        transformed_points: List or array of transformed points from the image.
-        action: 'collect' to use collect_balls or 'move' to use move_to_goal.
-        goal_point: Required if action is 'move'; specifies the target goal point.
+def robot_move_to_goal(
+    reference_point, 
+    goal_point = None,
+    iterations: int = 8
+) -> None:
+    for i in range(iterations):
+        command = move_to_goal(
+            reference_point, 
+            goal_point,  
+            iteration=i
+        )
+        if command:
+            print("GOAL: Generated command for iteration: {}", i + 1)
+            print(command)
+            script = command
+            response = send_and_receive(script)
+            print("Response from EV3:", response)
+        time.sleep(1)
+    time.sleep(2)
+    return
 
-    Returns:
-        A string with the commands, or an empty string if generation fails.
-    """
-    if action == "collect":
-        commands = collect_balls(reference_point, destination_points)
-    elif action == "move":
-        if goal_point is None:
-            raise ValueError("goal_point must be provided when action is 'move'")
-        commands = move_to_goal(reference_point, goal_point)
-    else:
-        commands = ""
-    return commands
+def repeat_collection(
+    reference_point, 
+    destination_points,
+    inner_iteration: int = 8,
+    outer_iteration: int = 5
+) -> None:
+    tip = reference_point
+    for i in range(outer_iteration):
+        closest_point = get_closest_path_point(destination_points, tip)
+        for j in range(inner_iteration):
+            command = collect_balls(
+                tip,
+                destination_points,
+                iteration=j)
+            if command:
+                print(f"Generated command for iterations: (outer {i+1}, inner {j+1}):")
+                print(command)
+                script = command
+                response = send_and_receive(script)
+                print("Response from EV3:", response)
+        next_tip = closest_point
+        print("Next tip (closest point):", next_tip)
+        tip = next_tip
+        destination_points.remove(closest_point)
+        print("AutonomousClient: Updated list of destinations: ", destination_points, 
+          "\n Length of destination points: ", len(destination_points),
+            "\n Former closest point:", closest_point)
+        time.sleep(1)
+    time.sleep(2)  
+    return
 
 def main():
-    # Example usage
-    # image = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image5.jpg"
     reference_point = (0, 0)  # This should be the detected arrow tip
+    goal_point = (100, 200) 
     tip = reference_point
-    # transformed_points = get_transformed_points_from_image(image)
     destination_points = [(100.01, 200.01), (150.01, 250.01), (200.01, 300.01), (600.01, 200.01), (300.01, 400.01), (1000.01, 800.01), 
                           (700.01, 700.01), (200.01,300.01), (400.01, 200.01), (800.01, 1200.01), (1500.01, 300.01)]  # Example points
-    script = HELLO_SCRIPT
-    print("Sending script to EV3:\n", script)
-    response = send_and_receive(script)
 
-    # Collect balls
-    commands = build_commands_from_points(tip, destination_points, action="collect")
-    closest_point = get_closest_path_point(destination_points, tip)  # Get the closest point
-    next_tip = closest_point  # Get the closest point
-    tip = next_tip   # Update tip to the first transformed point for next actions
-    print("Next tip (closest point):", next_tip)
-    destination_points.remove(closest_point)  # Remove the closest point from the list
+    tip = reference_point
+    closest_point = get_closest_path_point(destination_points, tip)
+
+    # Collect VIP ball
+    collect_VIP_ball(
+        tip,
+        destination_points,
+        iterations=6
+    )
+
+    next_tip = closest_point 
+    tip = next_tip 
+    destination_points.remove(closest_point)
+
+    time.sleep(2)  # Wait for a second before next action
+    print("Updated tip for next actions:", tip)
+    time.sleep(2)
 
     print("AutonomousClient: Updated list of destinations: ", destination_points, 
           "\n Length of destination points: ", len(destination_points),
-            "\n Former closest point:", closest_point)
+            "\n Former closest point:", next_tip)
     
-    if commands:
-        # print("Generated commands for collecting balls:")
-        # print(commands)
-        # response = send_and_receive(commands)
-        # print("Response from EV3:", response)
-        script = commands
-    
-    print("Sending commands to EV3:\n", script)
-    response = send_and_receive(script)
-    print("Response from EV3:", response)
-    
-
+    time.sleep(2)  # Wait for a second before next action
 
     # Move to goal
-    goal_point = (100, 200)  # Example goal point
-
-    commands = build_commands_from_points(tip, destination_points, action="move", goal_point=goal_point)
-    if commands:
-        # print("Generated commands for moving to goal:")
-        # print(commands)
-        # response = send_and_receive(commands)
-        # print("Response from EV3:", response)
-        script = commands
-    
-    print("Sending commands to EV3:\n", script)
-    response = send_and_receive(script)
-    print("Response from EV3:", response)
-
-    time.sleep(5)  # Wait for a second before next action
+    robot_move_to_goal(
+        tip,
+        goal_point=goal_point,
+        iterations=8
+    )
 
     next_tip = goal_point
     tip = next_tip
-    print("Next tip (closest point):", tip, "Goal point:", goal_point)
+    print("Next tip (goal point):", next_tip)
+
+    time.sleep(2)
     
-    # Collect balls again
-    for i in range(5):
-        commands = build_commands_from_points(tip, destination_points, action="collect")
-        closest_point = get_closest_path_point(destination_points, tip) # Get the closest point
-        next_tip = closest_point  # Get the closest point
-        print("Next tip (closest point):", next_tip)
-        tip = next_tip  # Update tip to the first transformed point for next action
-        destination_points.remove(closest_point)  # Remove the closest point from the lists
-        print("Updated tip for next actions:", tip)
-        print("AutonomousClient: Updated list of destinations: ", destination_points, 
-          "\n Length of destination points: ", len(destination_points),
-            "\n Former closest point:", closest_point)
-
-        if commands:
-            print(f"Generated commands for collecting balls (iteration {i+1}):")
-            # print(commands)
-            # response = send_and_receive(commands)
-            # print("Response from EV3:", response)
-            script = commands
-        
-        print("Sending commands to EV3:\n", script)
-        response = send_and_receive(script)
-        print("Response from EV3:", response)
-
-    time.sleep(5)  # Wait for a second before next action        
+    # Collect regular balls
+    repeat_collection(
+        tip, 
+        destination_points, 
+        inner_iteration=6, 
+        outer_iteration=5
+    )    
 
     # Move to goal again
-    commands = build_commands_from_points(tip, destination_points, action="move", goal_point=goal_point)
-    if commands:
-        print("Generated commands for moving to goal:")
-        #print(commands)
-        #response = send_and_receive(commands)
-        #print("Response from EV3:", response)
-        script = commands
+    robot_move_to_goal(
+        tip,
+        goal_point=goal_point,
+        iterations=8
+    )
 
-    print("Sending commands to EV3:", script)
-    response = send_and_receive(script)
-    print("Response from EV3:", response)
+    next_tip = goal_point
+    tip = next_tip
+    print("Next tip (goal point):", next_tip)
 
-    next_tip = goal_point  # Update tip to goal point after moving
-    tip = next_tip  # Update tip to goal point after moving
-    print("Next tip (closest point):", tip, "Goal point:", goal_point)   
+    time.sleep(2)
 
-    time.sleep(5)  # Wait for a second before next action
+    # Collect regular balls again
+    repeat_collection(
+        tip, 
+        destination_points, 
+        inner_iteration=6, 
+        outer_iteration=5
+    )
 
-    # Collect balls again
-    for i in range(5):
-        commands = build_commands_from_points(tip, destination_points, action="collect")
-        closest_point = get_closest_path_point(destination_points, tip) # Get the closest point
-        next_tip = closest_point  # Get the closest point
-        print("Next tip (closest point):", next_tip)
-        tip = next_tip  # Update tip to the first transformed point for next action
-        destination_points.remove(closest_point)  # Remove the closest point from the lists
-        print("Updated tip for next actions:", tip)
-        print("AutonomousClient: Updated list of destinations: ", destination_points, 
-          "\n Length of destination points: ", len(destination_points),
-            "\n Former closest point:", closest_point)
-
-        if commands:
-            print(f"Generated commands for collecting balls (iteration {i+1}):")
-            # print(commands)
-            # response = send_and_receive(commands)
-            # print("Response from EV3:", response)
-            script = commands
-        
-        print("Sending commands to EV3:\n", script)
-        response = send_and_receive(script)
-        print("Response from EV3:", response)
-
-    time.sleep(5)  # Wait for a second before next action        
+    time.sleep(2)     
     
     # Move to goal again
-    commands = build_commands_from_points(tip, destination_points, action="move", goal_point=goal_point)
-    if commands:
-        print("Generated commands for moving to goal:")
-        #print(commands)
-        #response = send_and_receive(commands)
-        #print("Response from EV3:", response)
-        script = commands
+    robot_move_to_goal(
+        tip,
+        goal_point=goal_point,
+        iterations=8
+    )
 
-    print("Sending commands to EV3:", script)
-    response = send_and_receive(script)
-    print("Response from EV3:", response)
+    next_tip = goal_point
+    tip = next_tip
+    print("Next tip (goal point):", next_tip)
+
+    time.sleep(2)
+    exit (0)  # Exit the program
 
 
 if __name__ == "__main__":

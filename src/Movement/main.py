@@ -8,8 +8,6 @@ import socket, _thread, time
 from queue import Queue
 
 # ── Imports ───────────────────────────────────────────────────────────
-from ev3dev2.tool import Tool
-
 from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveDifferential, SpeedRPM
 from ev3dev2.wheel import Wheel
 #!/usr/bin/env pybricks-micropython
@@ -18,9 +16,9 @@ from ev3dev2.motor import Motor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 # ----------------------------------------------------------------------
 # hardware
 # ----------------------------------------------------------------------
-Motor_GATE  = Motor(OUTPUT_D)
+Motor_GATE  = Motor(OUTPUT_A)
 print("Motor_GATE initialized")
-Motor_PUSH  = Motor(OUTPUT_A)
+Motor_PUSH  = Motor(OUTPUT_D)
 print("Motor_PUSH initialized")
 # ── Constants you set once ────────────────────────────────────────────
 STUD_MM            = 8.0      # LEGO grid pitch – keep at 8 mm
@@ -78,7 +76,7 @@ def drive_straight_mm(distance_mm: float,
         brake=brake,
         block=block
     )
-    wait_until_stopped(timeout_ms=300)  # wait for motors to stop
+
 
 def reverse_drive_mm(distance_mm: float,
                   speed_rpm: float = 60,
@@ -87,7 +85,7 @@ def reverse_drive_mm(distance_mm: float,
                   block:     bool  = True) -> None:
     """Drive backward for *distance_mm* (positive value)."""
     drive_straight_mm(-abs(distance_mm), speed_rpm, ramp_ms, brake, block)
-    wait_until_stopped(timeout_ms=300)  # wait_until_not_moving for motors to stop
+
 
 def turn_deg(angle_deg: float,
              speed_rpm: float = 40,
@@ -108,7 +106,6 @@ def turn_deg(angle_deg: float,
     else:
         mdiff.turn_left(SpeedRPM(speed_rpm),  -angle_deg,
                         brake=brake, block=block)    # :contentReference[oaicite:1]{index=1}
-    wait_until_stopped(timeout_ms=300)
 
 def stop_drive(brake: bool = True) -> None:
     """
@@ -123,62 +120,46 @@ def stop_drive(brake: bool = True) -> None:
 
 
 def turn_right_deg(angle_deg):
-    Motor_GATE.off()  # Ensure gate motor is off after turning
-    Motor_PUSH.off()  # Ensure push motor is off after turning
     turn_deg(angle_deg)
-    Motor_GATE.wait_until_not_moving(timeout=300)
-    Motor_PUSH.wait_until_not_moving(timeout=300)
+    mdiff.wait_until_not_moving(timeout=300)
     return
 
 def turn_left_deg(angle_deg):
-    Motor_GATE.off()  # Ensure gate motor is off after turning
-    Motor_PUSH.off()  # Ensure push motor is off after turning
     turn_deg(-angle_deg)
-    Motor_GATE.wait_until_not_moving(timeout=300)
-    Motor_PUSH.wait_until_not_moving(timeout=300)
+    mdiff.wait_until_not_moving(timeout=300)
     return
 
 def open_gate():
-    mdiff.off(brake=True)  # Stop the drive motors before opening the gate
-    Motor_PUSH.off()  # Ensure push motor is off before opening the gate
-    Motor_GATE.on(speed=5)
-    Motor_GATE.wait_until_not_moving(timeout=300)  # Wait for gate motor to stop
-    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
-    Motor_GATE.wait_until_not_moving(timeout=300)  # Wait for gate motor to stop
+    Motor_GATE.on(speed=5) 
+    Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def close_gate():
-    mdiff.off(brake=True)  # Stop the drive motors before closing the gate
-    Motor_PUSH.off()  # Ensure push motor is off before closing the gate
     Motor_GATE.on(speed=-5)
-    Motor_GATE.wait_until_not_moving(timeout=300)
-    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
-    Motor_GATE.wait_until_not_moving(timeout=300)  # Wait for gate motor to stop
+    Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def push_out():
-    mdiff.off(brake=True)  # Stop the drive motors before pushing out
-    Motor_GATE.off()  # Ensure gate motor is off before pushing out
     Motor_PUSH.on(speed=-5)
     Motor_PUSH.wait_until_not_moving(timeout=300)
-    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
-    Motor_PUSH.wait_until_not_moving(timeout=300)  # Wait for push motor to stop
     return
 
 def push_return():
-    mdiff.off(brake=True)  # Stop the drive motors before pushing back
-    Motor_GATE.off()  # Ensure gate motor is off before pushing back
     Motor_PUSH.on(speed=5)
     Motor_PUSH.wait_until_not_moving(timeout=300)
-    mdiff.wait_until_not_moving(timeout=300)  # Wait for drive motors to stop
-    Motor_PUSH.wait_until_not_moving(timeout=300)  # Wait for push motor to stop
+    return
+
+def turn_off_all_motors():
+    mdiff.off()
+    Motor_GATE.off()
+    Motor_PUSH.off()
     return
 
 
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
-HOST = "192.168.147.36"          # listen on all interfaces
+HOST = "192.168.199.36"          # listen on all interfaces
 PORT = 5532       # free port
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -224,6 +205,8 @@ def command_processor():
             "push_out": push_out,
             "push_return": push_return,
             "stop_drive": stop_drive,
+            "turn_off_all_motors": turn_off_all_motors,
+            "stop_all_motors": turn_off_all_motors,
             "mdiff": mdiff,
             "Motor_GATE": Motor_GATE,
             "Motor_PUSH": Motor_PUSH,
