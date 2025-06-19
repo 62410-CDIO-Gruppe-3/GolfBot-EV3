@@ -23,7 +23,7 @@ import queue
 import time
 
 print_lock = threading.Lock()
-EV3_IP = "192.168.199.36"   # ← IP address of your brick
+EV3_IP = "172.20.10.6"   # ← IP address of your brick
 PORT = 5532                  # Must match the server's port
 TIMEOUT = 5.0               # Timeout in seconds for socket operations
 MAX_RETRIES = 3             # Maximum number of connection retries
@@ -132,14 +132,17 @@ def main() -> None:
         "  P – push out  R – push return\n"
         "  X – STOP      Q – quit\n"
     )
-    while True:
-        key = input("> ").strip()
-        if key.lower() == "q":
-            break
-        script = build_command(key)
+    command_queue = queue.Queue()
+
+    # Example: Add some commands to the queue
+    command_queue.put("drive_straight_mm(1000)")
+    command_queue.put("turn_left_deg(90)")
+    command_queue.put("open_gate()")
+
+    while not command_queue.empty():
+        script = command_queue.get()
         reply = send_and_receive(script)
         print("EV3:", reply)
-
 
 if __name__ == "__main__":
     main()

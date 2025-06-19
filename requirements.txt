@@ -1,0 +1,17 @@
+# GolfBot-EV3 Requirements
+# Core dependencies for computer vision and image processing
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# Roboflow inference SDK for object detection
+inference-sdk>=0.50.5
+
+# Additional utilities
+pathlib2>=2.3.7; python_version < "3.4"
+
+# Development and testing dependencies (optional)
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# Note: ev3dev2 is not included as it's specific to EV3 hardware
+# and should be installed separately on the EV3 brick 
