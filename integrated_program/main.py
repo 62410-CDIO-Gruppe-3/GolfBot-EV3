@@ -52,6 +52,7 @@ def main() -> None:
         pose = get_robot_pose(frame)
         if pose and transformed:
             (cx, cy), _ = pose
+            (_,_), robot_angle = pose
             closest = min(
                 transformed,
                 key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
@@ -60,7 +61,8 @@ def main() -> None:
             for i in range(6):
                 collect_VIP_ball(
                     (cx, cy), 
-                    closest, 
+                    closest,
+                    robot_angle=robot_angle, 
                     iterations=i
             )
         
@@ -72,10 +74,12 @@ def main() -> None:
         pose = get_robot_pose(frame)
         if pose and transformed:
             (cx, cy), _ = pose
+            (_,_), robot_angle = pose
             for i in range(8):
                 robot_move_to_goal(
                     (cx, cy), 
-                    goal_point, 
+                    goal_point,
+                    robot_angle=robot_angle, 
                     iterations=i
                 )
         
@@ -89,6 +93,7 @@ def main() -> None:
             pose = get_robot_pose(frame)
             if pose and transformed:
                 (cx, cy), _ = pose
+                (_,_), robot_angle = pose
                 closest = min(
                     transformed,
                     key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
@@ -96,7 +101,8 @@ def main() -> None:
                 for j in range(6):
                     repeat_collection(
                         (cx, cy), 
-                        closest, 
+                        closest,
+                        robot_angle=robot_angle,
                         inner_iteration=j, 
                         outer_iteration=i
                     )
@@ -106,10 +112,12 @@ def main() -> None:
         pose = get_robot_pose(frame)
         if pose and transformed:
             (cx, cy), _ = pose
+            (_, _), robot_angle = pose
             for i in range(8):
                 robot_move_to_goal(
                     (cx, cy), 
-                    goal_point, 
+                    goal_point,
+                    robot_angle=robot_angle, 
                     iterations=i
                 )
 
@@ -123,6 +131,7 @@ def main() -> None:
             pose = get_robot_pose(frame)
             if pose and transformed:
                 (cx, cy), _ = pose
+                (_, _), robot_angle = pose
                 closest = min(
                     transformed,
                     key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
@@ -130,7 +139,8 @@ def main() -> None:
                 for j in range(6):
                     repeat_collection(
                         (cx, cy), 
-                        closest, 
+                        closest,
+                        robot_angle=robot_angle,
                         inner_iteration=j, 
                         outer_iteration=i
                     )
@@ -140,15 +150,14 @@ def main() -> None:
         pose = get_robot_pose(frame)
         if pose and transformed:
             (cx, cy), _ = pose
+            (_, _), robot_angle = pose
             for i in range(8):
                 robot_move_to_goal(
                     (cx, cy), 
-                    goal_point, 
+                    goal_point,
+                    robot_angle=robot_angle, 
                     iterations=i
                 )
-
-        
-
 
                 
         frame_disp = draw_points(frame, detections)

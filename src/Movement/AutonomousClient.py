@@ -87,13 +87,15 @@ def send_and_receive(script: str) -> str:
 
 def collect_VIP_ball(    
     reference_point, 
-    destination_point, 
+    destination_point,
+    robot_angle: float = 0.0, 
     iterations: int = 6
 ) -> None:
     for i in range(iterations):
         command = collect_balls(    
             reference_point, 
-            destination_point, 
+            destination_point,
+            robot_angle=robot_angle, 
             iteration=i
         )
         if command:
@@ -109,12 +111,14 @@ def collect_VIP_ball(
 def robot_move_to_goal(
     reference_point, 
     goal_point = None,
+    robot_angle: float = 0.0,
     iterations: int = 8
 ) -> None:
     for i in range(iterations):
         command = move_to_goal(
             reference_point, 
-            goal_point,  
+            goal_point,
+            robot_angle=robot_angle,  
             iteration=i
         )
         if command:
@@ -130,6 +134,7 @@ def robot_move_to_goal(
 def repeat_collection(
     reference_point, 
     destination_point,
+    robot_angle: float = 0.0,
     inner_iteration: int = 6,
     outer_iteration: int = 5
 ) -> None:
@@ -139,6 +144,7 @@ def repeat_collection(
             command = collect_balls(
                 tip,
                 destination_point,
+                robot_angle=robot_angle,
                 iteration=j)
             if command:
                 print(f"Generated command for iterations: (outer {i+1}, inner {j+1}):")
@@ -154,6 +160,7 @@ def repeat_collection(
 
 def main():
     reference_point = (0, 0)  # This should be the detected arrow tip
+    robot_angle = 0.0  # This should be the robot's current angle
     goal_point = (100, 200) 
     tip = reference_point
     destination_points = [(100.01, 200.01), (150.01, 250.01), (200.01, 300.01), (600.01, 200.01), (300.01, 400.01), (1000.01, 800.01), 
@@ -166,6 +173,7 @@ def main():
     collect_VIP_ball(
         tip,
         destination_points,
+        robot_angle=robot_angle,
         iterations=6
     )
 
@@ -187,6 +195,7 @@ def main():
     robot_move_to_goal(
         tip,
         goal_point=goal_point,
+        robot_angle=robot_angle,
         iterations=8
     )
 
@@ -199,7 +208,8 @@ def main():
     # Collect regular balls
     repeat_collection(
         tip, 
-        destination_points, 
+        destination_points,
+        robot_angle=robot_angle, 
         inner_iteration=6, 
         outer_iteration=5
     )    
@@ -208,6 +218,7 @@ def main():
     robot_move_to_goal(
         tip,
         goal_point=goal_point,
+        robot_angle=robot_angle,
         iterations=8
     )
 
@@ -220,7 +231,8 @@ def main():
     # Collect regular balls again
     repeat_collection(
         tip, 
-        destination_points, 
+        destination_points,
+        robot_angle=robot_angle, 
         inner_iteration=6, 
         outer_iteration=5
     )
@@ -231,6 +243,7 @@ def main():
     robot_move_to_goal(
         tip,
         goal_point=goal_point,
+        robot_angle=robot_angle,
         iterations=8
     )
 

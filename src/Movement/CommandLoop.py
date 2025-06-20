@@ -4,7 +4,7 @@ from PathFinding.PointsGenerator import get_closest_path_point
 from PathFinding.ArrowVector import ArrowVector
 
 
-def collect_balls(reference_point, destination_point, iteration: int = 0):
+def collect_balls(reference_point, destination_point, robot_angle, iteration: int = 0):
     """
     Create an input dictionary for the pathfinding algorithm.
 
@@ -22,11 +22,13 @@ def collect_balls(reference_point, destination_point, iteration: int = 0):
     
     vector = ArrowVector(reference_point, destination_point)
     distance = vector.get_size()
-    angle = vector.get_angle()
+    robot_angle = math.degrees(robot_angle)
+    ball_angle = vector.get_angle()
+    angle = ball_angle - robot_angle
 
     print("Tip of the robot: ", reference_point, "\n Destination: ", destination_point)
 
-    print(f"Distance: {distance}, Angle: {angle}")
+    print(f"Distance: {distance}, Ball Angle: {ball_angle}, Robot Angle: {robot_angle}")
 
     match iteration:
         case 0:
@@ -46,7 +48,7 @@ def collect_balls(reference_point, destination_point, iteration: int = 0):
                 input = f"close_gate()\n"
     return input
 
-def move_to_goal(reference_point, goal_point, iteration: int = 0):
+def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     """
     Create an input dictionary for the pathfinding algorithm to move to the goal.
 
@@ -64,11 +66,13 @@ def move_to_goal(reference_point, goal_point, iteration: int = 0):
 
     vector = ArrowVector(reference_point, goal_point)
     distance = vector.get_size()
-    angle = vector.get_angle()
+    robot_angle = math.degrees(robot_angle)
+    goal_angle = vector.get_angle()
+    angle = goal_angle - robot_angle
 
     print("Tip of the robot: ", reference_point, "\n Goal: ", goal_point)
      
-    print(f"Distance: {distance}, Angle: {angle}")
+    print(f"Distance: {distance}, Goal Angle: {goal_angle}, Robot Angle: {robot_angle}")
 
     match iteration:
         case 0:
