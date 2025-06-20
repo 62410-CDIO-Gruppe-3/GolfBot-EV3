@@ -22,7 +22,6 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     
     vector = ArrowVector(reference_point, destination_point)
     distance = vector.get_size()
-    robot_angle = math.degrees(robot_angle)
     ball_angle = vector.get_angle()
     
     if ball_angle < robot_angle:
@@ -30,9 +29,9 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     else:
         angle = robot_angle - ball_angle
 
-    print("Tip of the robot: ", reference_point, "\n Destination: ", destination_point)
+    print(f"Tip of the robot: {reference_point},\n Destination: {destination_point}")
 
-    print(f"Distance: {distance}, Ball Angle: {ball_angle}, Robot Angle: {robot_angle}")
+    print(f"Distance: {distance},\n Ball Angle: {ball_angle},\n Robot Angle: {robot_angle}")
 
     match iteration:
         case 0:
@@ -70,7 +69,6 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
 
     vector = ArrowVector(reference_point, goal_point)
     distance = vector.get_size()
-    robot_angle = math.degrees(robot_angle)
     goal_angle = vector.get_angle()
     
     if goal_angle < robot_angle:
@@ -78,9 +76,9 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     else:
         angle = goal_angle - robot_angle
 
-    print("Tip of the robot: ", reference_point, "\n Goal: ", goal_point)
+    print(f"Tip of the robot: {reference_point},\n Goal: {goal_point}")
      
-    print(f"Distance: {distance}, Goal Angle: {goal_angle}, Robot Angle: {robot_angle}")
+    print(f"Distance: {distance},\n Goal Angle: {goal_angle},\n Robot Angle: {robot_angle}")
 
     match iteration:
         case 0:
