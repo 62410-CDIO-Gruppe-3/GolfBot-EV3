@@ -24,7 +24,11 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     distance = vector.get_size()
     robot_angle = math.degrees(robot_angle)
     ball_angle = vector.get_angle()
-    angle = ball_angle - robot_angle
+    
+    if ball_angle < robot_angle:
+        angle = robot_angle - math.abs(ball_angle)
+    else:
+        angle = robot_angle - ball_angle
 
     print("Tip of the robot: ", reference_point, "\n Destination: ", destination_point)
 
@@ -68,7 +72,11 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     distance = vector.get_size()
     robot_angle = math.degrees(robot_angle)
     goal_angle = vector.get_angle()
-    angle = goal_angle - robot_angle
+    
+    if goal_angle < robot_angle:
+        angle = robot_angle - math.abs(goal_angle)
+    else:
+        angle = goal_angle - robot_angle
 
     print("Tip of the robot: ", reference_point, "\n Goal: ", goal_point)
      
