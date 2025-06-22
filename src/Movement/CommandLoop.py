@@ -1,4 +1,5 @@
 import math
+import time
 
 from PathFinding.PointsGenerator import get_closest_path_point
 from PathFinding.ArrowVector import ArrowVector
@@ -16,6 +17,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     Returns:
         dict: Input dictionary containing transformed points and arrow vectors.
     """
+    print("Moving to collect balls...")
 
     if reference_point is None or destination_point is None:
         return None
@@ -25,11 +27,21 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     ball_angle = vector.get_angle()
     
     if ball_angle < robot_angle:
-        angle = robot_angle - math.abs(ball_angle)
+        angle = robot_angle - abs(ball_angle)
     else:
         angle = robot_angle - ball_angle
 
-    print(f"Tip of the robot: {reference_point},\n Destination: {destination_point}")
+    print(f"Tip of the robot: {reference_point}")
+    time.sleep(1)
+    print(f"Destination: {destination_point}")
+    time.sleep(1)
+    print(f"Robot angle: {robot_angle}")
+    time.sleep(1)
+    print(f"Ball angle: {ball_angle}")
+    time.sleep(1)
+    print(f"Angle: {angle}")
+    time.sleep(1)
+
 
     print(f"Distance: {distance},\n Ball Angle: {ball_angle},\n Robot Angle: {robot_angle}")
 
@@ -64,6 +76,8 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
         dict: Input dictionary containing transformed points and arrow vectors.
     """
 
+    print("Moving to goal...")
+
     if reference_point is None or goal_point is None:
         return None
 
@@ -72,13 +86,20 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     goal_angle = vector.get_angle()
     
     if goal_angle < robot_angle:
-        angle = robot_angle - math.abs(goal_angle)
+        angle = robot_angle - abs(goal_angle)
     else:
         angle = goal_angle - robot_angle
 
-    print(f"Tip of the robot: {reference_point},\n Goal: {goal_point}")
-     
-    print(f"Distance: {distance},\n Goal Angle: {goal_angle},\n Robot Angle: {robot_angle}")
+    print(f"Tip of the robot: {reference_point}")
+    time.sleep(1)
+    print(f"Destination: {goal_point}")
+    time.sleep(1)
+    print(f"Robot angle: {robot_angle}")
+    time.sleep(1)
+    print(f"Goal angle: {goal_angle}")
+    time.sleep(1)
+    print(f"Angle: {angle}")
+    time.sleep(1)
 
     match iteration:
         case 0:
