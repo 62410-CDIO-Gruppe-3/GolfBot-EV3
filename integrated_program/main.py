@@ -50,9 +50,8 @@ def main() -> None:
         goal_point = (1100, 900)
 
         pose = get_robot_pose(frame)
-        if pose and transformed:
-            (cx, cy), _ = pose
-            (_,_), robot_angle = pose
+        if pose and transformed is not None and len(transformed) > 0:
+            (cx, cy), robot_angle = pose
             closest = min(
                 transformed,
                 key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
@@ -72,7 +71,7 @@ def main() -> None:
         transformed = transform_points(detections, H) if detections else []
             
         pose = get_robot_pose(frame)
-        if pose and transformed:
+        if pose and transformed is not None and len(transformed) > 0:
             (cx, cy), _ = pose
             (_,_), robot_angle = pose
             for i in range(8):
@@ -91,7 +90,7 @@ def main() -> None:
 
         for i in range(5):
             pose = get_robot_pose(frame)
-            if pose and transformed:
+            if pose and transformed is not None and len(transformed) > 0:
                 (cx, cy), _ = pose
                 (_,_), robot_angle = pose
                 closest = min(
@@ -110,7 +109,7 @@ def main() -> None:
                 time.sleep(1)
         
         pose = get_robot_pose(frame)
-        if pose and transformed:
+        if pose and transformed is not None and len(transformed) > 0:
             (cx, cy), _ = pose
             (_, _), robot_angle = pose
             for i in range(8):
@@ -129,7 +128,7 @@ def main() -> None:
 
         for i in range(5):
             pose = get_robot_pose(frame)
-            if pose and transformed:
+            if pose and transformed is not None and len(transformed) > 0:
                 (cx, cy), _ = pose
                 (_, _), robot_angle = pose
                 closest = min(
@@ -148,7 +147,7 @@ def main() -> None:
                 time.sleep(1)
         
         pose = get_robot_pose(frame)
-        if pose and transformed:
+        if pose and transformed is not None and len(transformed) > 0:
             (cx, cy), _ = pose
             (_, _), robot_angle = pose
             for i in range(8):

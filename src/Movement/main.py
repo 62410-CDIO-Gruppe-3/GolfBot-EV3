@@ -157,7 +157,7 @@ def turn_off_all_motors():
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
-HOST = "192.168.199.36"          # listen on all interfaces
+HOST = "172.20.10.4"          # listen on all interfaces
 PORT = 5532       # free port
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

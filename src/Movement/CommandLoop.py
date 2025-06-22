@@ -38,7 +38,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
             if 0 < angle < 180.0:
                     input = f"turn_left_deg({angle})\n"
             else:
-                    input = f"turn_right_deg({math.abs(angle)})\n"
+                    input = f"turn_right_deg({angle})\n"
         case 1:
                 input = f"drive_straight_mm({distance - 50})\n"
         case 2:  
@@ -87,7 +87,7 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
             else:
                     input = f"turn_right_deg({angle})\n"
         case 1:
-                input = f"drive_straight_mm({150})\n"
+                input = f"drive_straight_mm({distance - 50})\n"
         case 2:
                 input = f"stop_drive()\n"
         case 3:
