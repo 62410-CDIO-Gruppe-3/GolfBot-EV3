@@ -72,6 +72,7 @@ Robotten har 8 minutter til at finde, samle og aflevere boldene i en udgangsåbn
 | `hatch2.py`       | Funktioner til boldskubber                                                   |
 | `vision.py`       | (Kommende) Billedgenkendelse og VIP-bold identifikation                      |
 | `navigation.py`   | (Kommende) Pathfinding og positionsstyring                                   |
+| `frame_navigator.py` | Dynamisk styring billede for billede |
 | `tests/`          | Testkode til hardware og mekanismer (fx test af motorer og sekvenser)        |
 
 ---
@@ -83,6 +84,13 @@ Robotten har 8 minutter til at finde, samle og aflevere boldene i en udgangsåbn
 from main import main
 main()
 ```
+### Naviger billede for billede
+```python
+from Movement.frame_navigator import FrameNavigator
+nav = FrameNavigator([(100, 200), (300, 400)])
+nav.run()
+```
+
 
 ### Brug hjælpefunktioner direkte
 ```python
