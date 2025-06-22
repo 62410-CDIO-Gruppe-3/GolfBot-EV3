@@ -26,8 +26,8 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     distance = vector.get_size()
     ball_angle = vector.get_angle()
     
-    if ball_angle < robot_angle:
-        angle = robot_angle - abs(ball_angle)
+    if abs(ball_angle) < abs(robot_angle):
+        angle = abs(robot_angle) - abs(ball_angle)
     else:
         angle = robot_angle - ball_angle
 
@@ -48,9 +48,9 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     match iteration:
         case 0:
             if 0 < angle < 180.0:
-                    input = f"turn_left_deg({angle})\n"
-            else:
                     input = f"turn_right_deg({angle})\n"
+            else:
+                    input = f"turn_left_deg({abs(angle)})\n"
         case 1:
                 input = f"drive_straight_mm({distance - 50})\n"
         case 2:  
@@ -85,8 +85,8 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     distance = vector.get_size()
     goal_angle = vector.get_angle()
     
-    if goal_angle < robot_angle:
-        angle = robot_angle - abs(goal_angle)
+    if abs(goal_angle) < abs(robot_angle):
+        angle = abs(robot_angle) - abs(goal_angle)
     else:
         angle = goal_angle - robot_angle
 
@@ -104,9 +104,9 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     match iteration:
         case 0:
             if 0 < angle < 180.0:
-                    input = f"turn_left_deg({angle})\n"
-            else:
                     input = f"turn_right_deg({angle})\n"
+            else:
+                    input = f"turn_left_deg({abs(angle)})\n"
         case 1:
                 input = f"drive_straight_mm({distance - 50})\n"
         case 2:

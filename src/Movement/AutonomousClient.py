@@ -89,16 +89,16 @@ def collect_VIP_ball(
     reference_point, 
     destination_point,
     robot_angle: float = 0.0, 
-    iterations: int = 0
+    iteration: int = 0
 ) -> None:
     command = collect_balls(    
         reference_point, 
         destination_point,
         robot_angle=robot_angle, 
-        iteration=i
+        iteration=iteration
         )
     if command:
-        print(f"Generated commands for collecting the VIP Ball (iteration {i+1}):")
+        print(f"Generated commands for collecting the VIP Ball (iteration {iteration+1}):")
         print(command)
         script = command
         response = send_and_receive(script)
@@ -111,16 +111,16 @@ def robot_move_to_goal(
     reference_point, 
     goal_point = None,
     robot_angle: float = 0.0,
-    iterations: int = 8
+    iteration: int = 8
 ) -> None:
     command = move_to_goal(
         reference_point, 
         goal_point,
         robot_angle=robot_angle,  
-        iteration=i
+        iteration=iteration
     )
     if command:
-        print(f"GOAL: Generated command for iteration: {i+1}" )
+        print(f"GOAL: Generated command for iteration: {iteration+1}" )
         print(command)
         script = command
         response = send_and_receive(script)

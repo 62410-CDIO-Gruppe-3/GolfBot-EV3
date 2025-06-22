@@ -107,6 +107,7 @@ class _RobotTracker:
 
         pinks  = self._find_markers(pink_m)
         purps  = self._find_markers(purple_m)
+        print(f"[DEBUG] Pink markers: {len(pinks)}, Purple markers: {len(purps)}")
         if not pinks or not purps:
             self._register_miss()
             return None
@@ -116,7 +117,9 @@ class _RobotTracker:
         best, best_score = None, 1e9
         for (px, py, _), (ux, uy, _) in [(p, u) for p in pinks for u in purps]:
             d = hypot(px - ux, py - uy)
-            if not (0.6 * exp <= d <= 1.4 * exp):
+            print(f"[DEBUG] Pair: pink=({px},{py}), purple=({ux},{uy}), distance={d:.2f}, expected={exp:.2f}")
+            if not (0.25 * exp <= d <= 1.7 * exp):
+                print(f"[DEBUG] Pair rejected: distance {d:.2f} not in [{0.6*exp:.2f}, {1.4*exp:.2f}]")
                 continue
             score = abs(d - exp)
             if score < best_score:
@@ -155,7 +158,16 @@ _tracker = _RobotTracker()
 
 def get_robot_pose(frame_bgr: np.ndarray, debug: bool = False):
     """Stateless façade around the internal tracker (see module docstring)."""
-    return _tracker.update(frame_bgr, debug)
+    result = _tracker.update(frame_bgr, debug)
+    # Add this:
+    hsv = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+    pink_mask = cv2.morphologyEx(_tracker._colour_mask(hsv, PINK_HSV), cv2.MORPH_OPEN, kernel)
+    purple_mask = cv2.morphologyEx(_tracker._colour_mask(hsv, PURPLE_HSV), cv2.MORPH_OPEN, kernel)
+    pinks = _tracker._find_markers(pink_mask)
+    purples = _tracker._find_markers(purple_mask)
+    print(f"[DEBUG] Pink markers: {len(pinks)}, Purple markers: {len(purples)}")
+    return result
 
 
 def reset_tracker():

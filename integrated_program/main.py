@@ -22,9 +22,10 @@ CONFIG = InferenceConfig(
     api_key=API_KEY,
     model_id="tabletennis-ball-detection/1",
 )
-
+detections = None
 
 def main() -> None:
+    global detections
     try:
         H = load_homography(HOMOGRAPHY_FILE)
     except Exception as exc:  # pragma: no cover - runtime path issue
@@ -36,6 +37,7 @@ def main() -> None:
         print("Failed to open camera")
         return
 
+    mode = "collect"
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -43,33 +45,47 @@ def main() -> None:
 
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = run_inference(frame_rgb, CONFIG)
-        detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
+        if detections is None:
+            detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
         transformed = transform_points(detections, H) if detections else []
+
+        print(f"Detected {len(transformed)} points")
+        print(f"Transformed points: {transformed}")
 
         goal_point = (1100, 900)
+        pose = get_robot_pose(frame)
+        print(f"Robot position: {pose}")
+        (temp_x, temp_y), _ = pose
 
-        pose = get_robot_pose(frame)
+        if pose:
+            transformed_robot_pose = transform_points([(temp_x, temp_y)], H)
+            if transformed_robot_pose.any():
+                (tx, ty) = transformed_robot_pose[0]
+                print(f"Transformed robot position: {(tx, ty)}")
+
         if pose and transformed is not None and len(transformed) > 0:
             (cx, cy), robot_angle = pose
-            closest = min(
-                transformed,
-                key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
-            )
-            for i in range(6):
-                collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, iterations=i)
-        
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        result = run_inference(frame_rgb, CONFIG)
-        detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
-        transformed = transform_points(detections, H) if detections else []
-            
-        pose = get_robot_pose(frame)
-        if pose and transformed is not None and len(transformed) > 0:
-            (cx, cy), robot_angle = pose
-            for i in range(8):
-                robot_move_to_goal((cx, cy), goal_point, robot_angle=robot_angle, iterations=i)
-    
-                
+
+            print(f"Robot position: {(cx,cy)}")
+            print(f"Robot angle: {robot_angle}")
+            if mode == "collect":
+                closest = min(
+                    transformed,
+                    key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
+                )
+                print(f"Closest point: {closest}")
+                for i in range(6):
+                    collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, iteration=i)
+                    time.sleep(1)
+                mode = "move"
+                continue  # Skip to next frame after collect
+            elif mode == "move":
+                for i in range(8):
+                    robot_move_to_goal((cx, cy), goal_point, robot_angle=robot_angle, iteration=i)
+                    time.sleep(1)
+                mode = "collect"
+                continue  # Skip to next frame after move            (cx, cy), robot_angle = pose
+
         frame_disp = draw_points(frame, detections)
         cv2.imshow("Integrated", frame_disp)
         if cv2.waitKey(1) & 0xFF == ord("q"):
