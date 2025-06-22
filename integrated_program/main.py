@@ -41,7 +41,6 @@ def main() -> None:
         if not ret:
             break
 
-        
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = run_inference(frame_rgb, CONFIG)
         detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
@@ -56,7 +55,6 @@ def main() -> None:
                 transformed,
                 key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
             )
-            #TODO: Implement postion for VIP ball collection
             for i in range(6):
                 collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, iterations=i)
         
@@ -71,83 +69,6 @@ def main() -> None:
             for i in range(8):
                 robot_move_to_goal((cx, cy), goal_point, robot_angle=robot_angle, iterations=i)
     
-        '''
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        result = run_inference(frame_rgb, CONFIG)
-        detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
-        transformed = transform_points(detections, H) if detections else []
-            
-
-        for i in range(5):
-            pose = get_robot_pose(frame)
-            if pose and transformed is not None and len(transformed) > 0:
-                (cx, cy), _ = pose
-                (_,_), robot_angle = pose
-                closest = min(
-                    transformed,
-                    key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
-                )
-                for j in range(6):
-                    repeat_collection(
-                        (cx, cy), 
-                        closest,
-                        robot_angle=robot_angle,
-                        inner_iteration=j, 
-                        outer_iteration=i
-                    )
-                print("Collection attempted.")
-                time.sleep(1)
-        
-        pose = get_robot_pose(frame)
-        if pose and transformed is not None and len(transformed) > 0:
-            (cx, cy), _ = pose
-            (_, _), robot_angle = pose
-            for i in range(8):
-                robot_move_to_goal(
-                    (cx, cy), 
-                    goal_point,
-                    robot_angle=robot_angle, 
-                    iterations=i
-                )
-
-        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        result = run_inference(frame_rgb, CONFIG)
-        detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
-        transformed = transform_points(detections, H) if detections else []
-            
-
-        for i in range(5):
-            pose = get_robot_pose(frame)
-            if pose and transformed is not None and len(transformed) > 0:
-                (cx, cy), _ = pose
-                (_, _), robot_angle = pose
-                closest = min(
-                    transformed,
-                    key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
-                )
-                for j in range(6):
-                    repeat_collection(
-                        (cx, cy), 
-                        closest,
-                        robot_angle=robot_angle,
-                        inner_iteration=j, 
-                        outer_iteration=i
-                    )
-                print("Collection attempted.")
-                time.sleep(1)
-        
-        pose = get_robot_pose(frame)
-        if pose and transformed is not None and len(transformed) > 0:
-            (cx, cy), _ = pose
-            (_, _), robot_angle = pose
-            for i in range(8):
-                robot_move_to_goal(
-                    (cx, cy), 
-                    goal_point,
-                    robot_angle=robot_angle, 
-                    iterations=i
-                )
-        '''
                 
         frame_disp = draw_points(frame, detections)
         cv2.imshow("Integrated", frame_disp)
