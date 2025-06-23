@@ -16,9 +16,9 @@ from ev3dev2.motor import Motor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 # ----------------------------------------------------------------------
 # hardware
 # ----------------------------------------------------------------------
-Motor_GATE  = Motor(OUTPUT_A)
+Motor_GATE  = Motor(OUTPUT_D)
 print("Motor_GATE initialized")
-Motor_PUSH  = Motor(OUTPUT_D)
+Motor_PUSH  = Motor(OUTPUT_A)
 print("Motor_PUSH initialized")
 # ── Constants you set once ────────────────────────────────────────────
 STUD_MM            = 8.0      # LEGO grid pitch – keep at 8 mm
@@ -128,23 +128,31 @@ def turn_left_deg(angle_deg):
     return
 
 def open_gate():
-    Motor_GATE.on(speed=5) 
-    Motor_GATE.wait_until_not_moving(timeout=300)  
+    Motor_GATE.on(speed=20)
+    time.sleep(1)  # <-- vent så længe du vil køre motoren
+    Motor_GATE.off() 
+   # Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def close_gate():
-    Motor_GATE.on(speed=-5)
-    Motor_GATE.wait_until_not_moving(timeout=300)  
+    Motor_GATE.on(speed=-20)
+    time.sleep(1)  # <-- vent så længe du vil køre motoren
+    Motor_GATE.off()
+    #Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def push_out():
-    Motor_PUSH.on(speed=-5)
-    Motor_PUSH.wait_until_not_moving(timeout=300)
+    Motor_PUSH.on(speed=-15)
+    time.sleep(1)  # <-- vent så længe du vil køre motoren
+    Motor_GATE.off()
+   # Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def push_return():
-    Motor_PUSH.on(speed=5)
-    Motor_PUSH.wait_until_not_moving(timeout=300)
+    Motor_PUSH.on(speed=15)
+    time.sleep(1)  # <-- vent så længe du vil køre motoren
+    Motor_GATE.off()
+   # Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def turn_off_all_motors():

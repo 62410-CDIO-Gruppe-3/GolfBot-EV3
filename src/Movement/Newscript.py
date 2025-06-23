@@ -5,9 +5,9 @@ import threading
 import queue
 import time
 
-from PathFinding.PointsGenerator import get_closest_path_point
+#from PathFinding.PointsGenerator import get_closest_path_point
 
-from Movement.CommandLoop import collect_balls, move_to_goal
+#from Movement.CommandLoop import collect_balls, move_to_goal
 
 
 print_lock = threading.Lock()
@@ -25,7 +25,7 @@ DISTANCE = 100
 
 OPEN_GATE = f"open_gate()\n"
 CLOSE_GATE = f"close_gate()\n"
-PUSH_GATE = f"push_gate()\n"
+PUSH_GATE = f"push_out()\n"
 PUSH_RETURN = f"push_return()\n"
 MOVE_FORWARD = f"drive_straight_mm({DISTANCE})\n"
 MOVE_BACKWARD = f"drive_straight_mm({-DISTANCE})\n"
@@ -96,5 +96,28 @@ def send_and_receive(script: str) -> str:
 def main() -> None:
     print("Sending commands to EV3...")
     # Substitute commands you want to test in the brackets below
+    response = send_and_receive("print('Hello from EV3')\n")
+    print("Response from EV3:", response)
+    time.sleep(1)
     response = send_and_receive(OPEN_GATE)
     print("Response from EV3:", response)
+    time.sleep(1)
+    response = send_and_receive(PUSH_GATE)
+    print("Response from EV3:", response)
+    time.sleep(1)
+    response = send_and_receive(PUSH_RETURN)
+    print("Response from EV3:", response)
+    time.sleep(1)
+    response = send_and_receive(CLOSE_GATE)
+    print("Response from EV3:", response)
+
+response = send_and_receive(CLOCKWISE_REVOLUTION)
+print("Response from EV3:", response)
+time.sleep(1)
+
+response = send_and_receive(COUNTERCLOCKWISE_REVOLUTION)
+print("Response from EV3:", response)
+time.sleep(1)
+
+if __name__ == "__main__":
+    main()
