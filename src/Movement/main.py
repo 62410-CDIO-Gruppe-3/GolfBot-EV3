@@ -8,7 +8,8 @@ import socket, _thread, time
 from queue import Queue
 
 # ── Imports ───────────────────────────────────────────────────────────
-from ev3dev2.motor import OUTPUT_B, OUTPUT_C, MoveDifferential, SpeedRPM
+from ev3dev2.tool import Tool
+from ev3dev2.motor import Motor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D, MoveDifferential, SpeedRPM
 from ev3dev2.wheel import Wheel
 #!/usr/bin/env pybricks-micropython
 import socket
@@ -157,8 +158,8 @@ def turn_off_all_motors():
 # ----------------------------------------------------------------------
 # TCP server
 # ----------------------------------------------------------------------
-HOST = "172.20.10.4"          # listen on all interfaces
-PORT = 5532       # free port
+HOST = "192.168.147.36"
+PORT = 5532
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # ← NEW
