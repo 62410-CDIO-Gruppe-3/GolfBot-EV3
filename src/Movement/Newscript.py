@@ -5,7 +5,7 @@ import threading
 import queue
 import time
 
-from PathFinding.PointsGenerator import get_closest_path_point
+#from PathFinding.PointsGenerator import get_closest_path_point
 
 from Movement.CommandLoop import collect_balls, move_to_goal
 
