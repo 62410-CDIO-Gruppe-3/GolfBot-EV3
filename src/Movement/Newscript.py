@@ -18,7 +18,7 @@ MAX_RETRIES = 3             # Maximum number of connection retries
 
 # Constants for robot movement
 
-ANGLE = 360
+ANGLE = 45
 DISTANCE = 100
 
 # ----------------------------------------------------------------------
@@ -101,28 +101,53 @@ def main() -> None:
     response = send_and_receive("print('Hello from EV3')\n")
     print("Response from EV3:", response)
     time.sleep(1)
+    
     response = send_and_receive(CLOCKWISE_REVOLUTION)
     print("Response from EV3:", response)
     time.sleep(4)
+    
+    response = send_and_receive(MOVE_FORWARD)
+    print("Response from EV3:", response)
+    time.sleep(1)
+    
     response = send_and_receive(COUNTERCLOCKWISE_REVOLUTION)
     print("Response from EV3:", response)
     time.sleep(1)
-    response = send_and_receive(OPEN_GATE)
+    
+    response = send_and_receive(MOVE_BACKWARD)
     print("Response from EV3:", response)
     time.sleep(1)
+    
+    """
+
+
     response = send_and_receive(OPEN_GATE)
     print("Response from EV3:", response)
-    time.sleep(1)
-    response = send_and_receive(CLOSE_GATE)
-    print("Response from EV3:", response)
-"""    response = send_and_receive(PUSH_GATE)
+    #time.sleep(1)
+    response = send_and_receive(PUSH_GATE)
     print("Response from EV3:", response)
     #time.sleep(1)
     response = send_and_receive(PUSH_RETURN)
     print("Response from EV3:", response)
     time.sleep(1)
+    response = send_and_receive(CLOSE_GATE)
+    print("Response from EV3:", response)
+    
+    response = send_and_receive(OPEN_GATE)
+    print("Response from EV3:", response)
+    #time.sleep(1)
+    
+    
+    
+    response = send_and_receive(MOVE_FORWARD)
+    print("Response from EV3:", response)
+    time.sleep(1)
     
 
+    
+response = send_and_receive(CLOSE_GATE)
+print("Response from EV3:", response)
+    
 response = send_and_receive(CLOCKWISE_REVOLUTION)
 print("Response from EV3:", response)
 time.sleep(1)
@@ -131,5 +156,6 @@ response = send_and_receive(COUNTERCLOCKWISE_REVOLUTION)
 print("Response from EV3:", response)
 time.sleep(1)
 """
+
 if __name__ == "__main__":
     main()
