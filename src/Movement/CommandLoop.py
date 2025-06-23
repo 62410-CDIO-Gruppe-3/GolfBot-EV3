@@ -25,21 +25,34 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     vector = ArrowVector(reference_point, destination_point)
     distance = vector.get_size()
     ball_angle = vector.get_angle()
+    angle = 0
+
+    print(f"robot_angle: {robot_angle}, ball_angle: {ball_angle}")
     
     if robot_angle < 0 and ball_angle < 0 and abs(robot_angle) < abs(ball_angle):
         angle = abs(robot_angle) - abs(ball_angle)
         print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {ball_angle}")
     elif robot_angle < 0 and ball_angle < 0 and abs(robot_angle) > abs(ball_angle):
-          angle = (abs(robot_angle) - abs(ball_angle)) * -1
-          print(f"Angle: {angle} = (Robot Angle: {robot_angle} - Ball Angle: {ball_angle}) * -1")
+        angle = (abs(robot_angle) - abs(ball_angle)) * -1
+        print(f"Angle: {angle} = ( Robot Angle: {robot_angle} - Ball Angle: {ball_angle} ) * -1")
     elif -90 < robot_angle < 0 and 0 < ball_angle <= 90:
         angle = (180 - abs(robot_angle)) + abs(ball_angle)
+        print(f"Angle: {angle} = (180 - | Robot Angle: {robot_angle} | ) + | Ball Angle: {ball_angle} |")
     elif -90 < robot_angle < 0 and 90 < ball_angle < 180:
         angle = ((180 - abs(robot_angle)) + abs(ball_angle)) * -1
+        print(f"Angle: {angle} = ((180 - | Robot Angle: {robot_angle} |) + | Ball Angle: {ball_angle}| ) * -1")
     elif 0 < robot_angle and 0 < ball_angle and abs(robot_angle) < abs(ball_angle):
-          angle = abs(ball_angle) - abs(robot_angle)
+        angle = abs(ball_angle) - abs(robot_angle)
+        print(f"Angle: {angle} = | Ball Angle: {ball_angle} | - | Robot Angle: {robot_angle} |")
     elif 0 < robot_angle and 0 < ball_angle and abs(robot_angle) > abs(ball_angle):
-          angle = (abs(ball_angle) - abs(robot_angle)) * -1
+        angle = (abs(ball_angle) - abs(robot_angle)) * -1
+        print(f"Angle: {angle} = (| Ball Angle: {ball_angle} | - | Robot Angle: {robot_angle} | ) * -1")
+    elif 0 < robot_angle < 90 and -90 < ball_angle < 0:
+        angle = (180 - abs(robot_angle)) + abs(ball_angle)
+        print(f"Angle: {angle} = (180 - | Robot Angle: {robot_angle} | ) + | Ball Angle: {ball_angle} |")
+    elif 90 < robot_angle < 180 and -90 < ball_angle < 0:
+        angle = ((180 - abs(robot_angle)) + abs(ball_angle)) * -1
+        print(f"Angle: {angle} = ((180 - | Robot Angle: {robot_angle} |) + | Ball Angle: {ball_angle}| ) * -1")
 
     print(f"Tip of the robot: {reference_point}")
     time.sleep(1)
@@ -49,8 +62,8 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     time.sleep(1)
     print(f"Ball angle: {ball_angle}")
     time.sleep(1)
-    print(f"Angle: {angle}")
-    time.sleep(1)
+    #print(f"Angle: {angle}")
+    #time.sleep(1)
 
 
     print(f"Distance: {distance},\n Ball Angle: {ball_angle},\n Robot Angle: {robot_angle}")

@@ -17,7 +17,7 @@ from Movement.CommandLoop import collect_balls, move_to_goal
 
 
 print_lock = threading.Lock()
-EV3_IP = "111.111.111.111"   # ← IP address of your brick
+EV3_IP = "192.168.82.36"   # ← IP address of your brick
 PORT = 5532                  # Must match the server's port
 TIMEOUT = 5.0               # Timeout in seconds for socket operations
 MAX_RETRIES = 3             # Maximum number of connection retries
@@ -125,8 +125,6 @@ def robot_move_to_goal(
         script = command
         response = send_and_receive(script)
         print("Response from EV3:", response)
-        time.sleep(1)
-    time.sleep(2)
     return
 
 def repeat_collection(
@@ -151,8 +149,6 @@ def repeat_collection(
                 response = send_and_receive(script)
                 print("Response from EV3:", response)
         print("AutonomousClient: Collecting ball at destination: ", destination_point)
-        time.sleep(1)
-    time.sleep(2)  
     return
 
 

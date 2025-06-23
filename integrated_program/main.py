@@ -86,13 +86,11 @@ def main() -> None:
                 print(f"Closest point: {closest}")
                 for i in range(6):
                     collect_VIP_ball((tx, ty), closest, robot_angle=robot_angle, iteration=i)
-                    time.sleep(1)
                 mode = "move"
                 continue  # Skip to next frame after collect
             elif mode == "move":
                 for i in range(8):
                     robot_move_to_goal((tx, ty), goal_point, robot_angle=robot_angle, iteration=i)
-                    time.sleep(1)
                 mode = "collect"
                 continue  # Skip to next frame after move            (cx, cy), robot_angle = pose
 
