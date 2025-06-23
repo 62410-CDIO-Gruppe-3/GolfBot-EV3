@@ -18,7 +18,7 @@ MAX_RETRIES = 3             # Maximum number of connection retries
 
 # Constants for robot movement
 
-ANGLE = 90
+ANGLE = 360
 DISTANCE = 100
 
 # ----------------------------------------------------------------------
@@ -30,7 +30,7 @@ PUSH_RETURN = f"push_return()\n"
 MOVE_FORWARD = f"drive_straight_mm({DISTANCE})\n"
 MOVE_BACKWARD = f"drive_straight_mm({-DISTANCE})\n"
 CLOCKWISE_REVOLUTION = f"turn_left_deg({ANGLE})\n"
-COUNTERCLOCKWISE_REVOLUTION = f"turn_right_deg({ANGLE})\n"
+COUNTERCLOCKWISE_REVOLUTION = f"turn_right_deg({ANGLE+4})\n"
 
 # ----------------------------------------------------------------------
 # Networking helper
@@ -103,19 +103,25 @@ def main() -> None:
     time.sleep(1)
     response = send_and_receive(CLOCKWISE_REVOLUTION)
     print("Response from EV3:", response)
+    time.sleep(5)
+    response = send_and_receive(COUNTERCLOCKWISE_REVOLUTION)
+    print("Response from EV3:", response)
+    time.sleep(1)
+    response = send_and_receive(OPEN_GATE)
+    print("Response from EV3:", response)
     time.sleep(1)
     response = send_and_receive(OPEN_GATE)
     print("Response from EV3:", response)
     #time.sleep(1)
     response = send_and_receive(PUSH_GATE)
     print("Response from EV3:", response)
-    time.sleep(1)
+    #time.sleep(1)
     response = send_and_receive(PUSH_RETURN)
     print("Response from EV3:", response)
     time.sleep(1)
     response = send_and_receive(CLOSE_GATE)
     print("Response from EV3:", response)
-
+"""
 response = send_and_receive(CLOCKWISE_REVOLUTION)
 print("Response from EV3:", response)
 time.sleep(1)
@@ -123,6 +129,6 @@ time.sleep(1)
 response = send_and_receive(COUNTERCLOCKWISE_REVOLUTION)
 print("Response from EV3:", response)
 time.sleep(1)
-
+"""
 if __name__ == "__main__":
     main()

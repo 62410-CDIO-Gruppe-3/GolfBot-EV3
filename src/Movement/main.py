@@ -22,7 +22,7 @@ Motor_PUSH  = Motor(OUTPUT_A)
 print("Motor_PUSH initialized")
 # ── Constants you set once ────────────────────────────────────────────
 STUD_MM            = 8.0      # LEGO grid pitch – keep at 8 mm
-WHEEL_DISTANCE_MM  = 50.0     # centre-to-centre spacing of your wheels
+WHEEL_DISTANCE_MM  = 137.53    # centre-to-centre spacing of your wheels
 
 # ── Wheel geometry (68.8 × 36 ZR tyre) ────────────────────────────────
 class Tire68836ZR(Wheel):
@@ -103,9 +103,11 @@ def turn_deg(angle_deg: float,
     if angle_deg >= 0:
         mdiff.turn_right(SpeedRPM(speed_rpm),  angle_deg,
                          brake=brake, block=block)   # :contentReference[oaicite:0]{index=0}
+        #mdiff.wait_until_not_moving(timeout=300)
     else:
         mdiff.turn_left(SpeedRPM(speed_rpm),  -angle_deg,
                         brake=brake, block=block)    # :contentReference[oaicite:1]{index=1}
+        #mdiff.wait_until_not_moving(timeout=300)
 
 def stop_drive(brake: bool = True) -> None:
     """
@@ -128,16 +130,16 @@ def turn_left_deg(angle_deg):
     return
 
 def open_gate():
-    Motor_GATE.on(speed=20)
+    Motor_GATE.on(speed=10)
     time.sleep(1)  # <-- vent så længe du vil køre motoren
-    Motor_GATE.off() 
+    #Motor_GATE.off() 
    # Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def close_gate():
-    Motor_GATE.on(speed=-20)
+    Motor_GATE.on(speed=-10)
     time.sleep(1)  # <-- vent så længe du vil køre motoren
-    Motor_GATE.off()
+    #Motor_GATE.off()
     #Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 

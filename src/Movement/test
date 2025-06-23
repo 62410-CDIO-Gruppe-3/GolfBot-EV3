@@ -1,0 +1,18 @@
+import socket
+
+EV3_IP = "172.20.10.4"
+PORT = 5532
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    sock.connect((EV3_IP, PORT))
+    sock.sendall(b"open_gate()\n")
+    sock.shutdown(socket.SHUT_WR)
+
+    response = b""
+    while True:
+        chunk = sock.recv(1024)
+        if not chunk:
+            break
+        response += chunk
+
+    print("Received from EV3:", response.decode("utf-8"))
