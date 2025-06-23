@@ -5,7 +5,7 @@ from ImageRecognition.Homography import create_homography, save_homography
 
 # Constants (matching main.py)
 TRANSFORM_W, TRANSFORM_H = 1800, 1200
-HOMOGRAPHY_FILE = "homography.npy"
+HOMOGRAPHY_FILE = str((Path(__file__).parent / "homography.npy").resolve())
 
 def main():
     # Initialize video capture (using camera 1 to match main.py). Use iriun.com to get the camera working.

@@ -8,14 +8,18 @@ import time
 ROOT = Path(__file__).resolve().parents[1] / "src"
 sys.path.append(str(ROOT))
 
+
+
 from cdio_utils import InferenceConfig, run_inference, transform_points, draw_points
 from ImageRecognition.Homography import load_homography
 from track_robot_v2 import get_robot_pose
 from Movement.AutonomousClient import send_and_receive, collect_VIP_ball, repeat_collection, robot_move_to_goal
 
+SRC = Path(__file__).resolve().parents[1] / "src"
+
 API_KEY = "BdmadiDKNX7YzP4unsUm"
 TRANSFORM_W, TRANSFORM_H = 1800, 1200
-HOMOGRAPHY_FILE = ROOT.parent / "homography.npy"
+HOMOGRAPHY_FILE = SRC / "homography.npy"
 
 CONFIG = InferenceConfig(
     api_url="http://localhost:9001",
