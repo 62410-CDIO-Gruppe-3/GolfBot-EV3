@@ -18,7 +18,7 @@ MAX_RETRIES = 3             # Maximum number of connection retries
 
 # Constants for robot movement
 
-ANGLE = 360
+ANGLE = 90
 DISTANCE = 100
 
 # ----------------------------------------------------------------------
@@ -93,15 +93,20 @@ def send_and_receive(script: str) -> str:
             except:
                 pass
 
+#def turnAndGo()
+
 def main() -> None:
     print("Sending commands to EV3...")
     # Substitute commands you want to test in the brackets below
     response = send_and_receive("print('Hello from EV3')\n")
     print("Response from EV3:", response)
     time.sleep(1)
-    response = send_and_receive(OPEN_GATE)
+    response = send_and_receive(CLOCKWISE_REVOLUTION)
     print("Response from EV3:", response)
     time.sleep(1)
+    response = send_and_receive(OPEN_GATE)
+    print("Response from EV3:", response)
+    #time.sleep(1)
     response = send_and_receive(PUSH_GATE)
     print("Response from EV3:", response)
     time.sleep(1)
