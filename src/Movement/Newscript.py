@@ -102,6 +102,12 @@ def main() -> None:
     response = send_and_receive(OPEN_GATE)
     print("Response from EV3:", response)
     time.sleep(1)
+    response = send_and_receive(PUSH_GATE)
+    print("Response from EV3:", response)
+    time.sleep(1)
+    response = send_and_receive(PUSH_RETURN)
+    print("Response from EV3:", response)
+    time.sleep(1)
     response = send_and_receive(CLOSE_GATE)
     print("Response from EV3:", response)
 
