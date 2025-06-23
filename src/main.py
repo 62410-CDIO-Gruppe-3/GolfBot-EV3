@@ -17,7 +17,7 @@ import datetime
 
 # Example usage
 API_KEY = "BdmadiDKNX7YzP4unsUm"
-TRANSFORM_W, TRANSFORM_H = 1200, 1800
+TRANSFORM_W, TRANSFORM_H = 1800, 1200
 OUTPUT_DIR = "transformed_images"
 HOMOGRAPHY_FILE = "homography.npy"
 TARGET_FPS = 10  # Process 5 frames per second

@@ -13,7 +13,7 @@ from ImageRecognition.Homography import load_homography
 from track_robot_v2 import get_robot_pose
 
 API_KEY = "BdmadiDKNX7YzP4unsUm"
-TRANSFORM_W, TRANSFORM_H = 1200, 1800
+TRANSFORM_W, TRANSFORM_H = 1800, 1200
 HOMOGRAPHY_FILE = ROOT.parent / "homography.npy"
 
 def main() -> None:

@@ -131,7 +131,7 @@ class _RobotTracker:
 
         (fx, fy), (bx, by), d = best
         cx, cy = (fx + bx) // 2, (fy + by) // 2
-        heading = degrees(atan2(by - fy, bx - fx))  # +ve = clockwise
+        heading = degrees(atan2(fy - by, fx - bx))  # +ve = clockwise
         print(f"[DEBUG] Chosen pair: front=({fx},{fy}), back=({bx},{by}), centroid=({cx},{cy}), heading={heading:.2f}°")
 
         # --- promote ROI coords to full-frame -----------------------------
