@@ -118,7 +118,7 @@ class _RobotTracker:
         for (px, py, _), (ux, uy, _) in [(p, u) for p in pinks for u in purps]:
             d = hypot(px - ux, py - uy)
             print(f"[DEBUG] Pair: pink=({px},{py}), purple=({ux},{uy}), distance={d:.2f}, expected={exp:.2f}")
-            if not (0.25 * exp <= d <= 1.7 * exp):
+            if not (0.25 * exp <= d <= 2.0 * exp):
                 print(f"[DEBUG] Pair rejected: distance {d:.2f} not in [{0.6*exp:.2f}, {1.4*exp:.2f}]")
                 continue
             score = abs(d - exp)
@@ -131,7 +131,8 @@ class _RobotTracker:
 
         (fx, fy), (bx, by), d = best
         cx, cy = (fx + bx) // 2, (fy + by) // 2
-        heading = degrees(atan2(fy - by, fx - bx))  # +ve = clockwise
+        heading = degrees(atan2(by - fy, bx - fx))  # +ve = clockwise
+        print(f"[DEBUG] Chosen pair: front=({fx},{fy}), back=({bx},{by}), centroid=({cx},{cy}), heading={heading:.2f}°")
 
         # --- promote ROI coords to full-frame -----------------------------
         offx = roi[1].start if roi else 0
