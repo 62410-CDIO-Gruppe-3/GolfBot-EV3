@@ -130,30 +130,34 @@ def turn_left_deg(angle_deg):
     return
 
 def open_gate():
-    Motor_GATE.on(speed=10)
+    Motor_GATE.off()
+    time.sleep(1)
+    Motor_GATE.on(speed=20)
     time.sleep(1)  # <-- vent så længe du vil køre motoren
-    #Motor_GATE.off() 
+    Motor_GATE.off() 
    # Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def close_gate():
-    Motor_GATE.on(speed=-10)
-    time.sleep(1)  # <-- vent så længe du vil køre motoren
-    #Motor_GATE.off()
+    Motor_GATE.off()
+    time.sleep(1)
+    Motor_GATE.on(speed=-20)
+    time.sleep(2)  # <-- vent så længe du vil køre motoren
+    Motor_GATE.off()
     #Motor_GATE.wait_until_not_moving(timeout=300)  
     return
 
 def push_out():
     Motor_PUSH.on(speed=-20)
-    time.sleep(1)  # <-- vent så længe du vil køre motoren
-    Motor_GATE.off()
+    time.sleep(2)  # <-- vent så længe du vil køre motoren
+    Motor_PUSH.off()
    # Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def push_return():
     Motor_PUSH.on(speed=20)
     time.sleep(1)  # <-- vent så længe du vil køre motoren
-    Motor_GATE.off()
+    Motor_PUSH.off()
    # Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
