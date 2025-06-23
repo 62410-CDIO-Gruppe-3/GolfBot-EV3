@@ -53,7 +53,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     elif 90 < robot_angle < 180 and ball_angle < 0:
         angle = (180 - abs(robot_angle)) + (180 - abs(ball_angle))
         print(f"Angle: {angle} = (180 - Robot Angle: {robot_angle}) + (180 - Ball Angle: {ball_angle})")
-        
+
     print(f"Tip of the robot: {reference_point}")
     time.sleep(1)
     print(f"Destination: {destination_point}")
@@ -108,10 +108,30 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     distance = vector.get_size()
     goal_angle = vector.get_angle()
     
-    if abs(goal_angle) < abs(robot_angle):
+    if robot_angle <= 0 and goal_angle <= 0 and abs(robot_angle) <= abs(goal_angle):
+        angle = (abs(goal_angle) - abs(robot_angle))* -1
+        print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {goal_angle}")
+    elif robot_angle <= 0 and goal_angle <= 0 and abs(robot_angle) >= abs(goal_angle):
         angle = abs(robot_angle) - abs(goal_angle)
-    else:
-        angle = goal_angle - robot_angle
+        print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {goal_angle}")
+    elif -90 < robot_angle < 0 and 0 < goal_angle <= 90:
+        angle = abs(robot_angle) + goal_angle
+        print(f"Angle: {angle} = Robot Angle: {robot_angle} + Ball Angle: {goal_angle}")
+    elif robot_angle < 0 and 90 < goal_angle < 180:
+        angle = ((180 - abs(robot_angle)) + (180 - goal_angle))*-1
+        print(f"Angle: {angle} = (180 - Robot Angle: {robot_angle}) + (180 - Ball Angle: {goal_angle}) * -1")
+    elif 0 < robot_angle and 0 < goal_angle and abs(robot_angle) <= abs(goal_angle):
+        angle = abs(goal_angle) - abs(robot_angle)
+        print(f"Angle: {angle} = Ball Angle: {goal_angle} - Robot Angle: {robot_angle}")
+    elif 0 < robot_angle and 0 < goal_angle and abs(robot_angle) >= abs(goal_angle):
+        angle = (abs(robot_angle) - abs(goal_angle))* -1
+        print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {goal_angle}")
+    elif 0 < robot_angle < 90 and goal_angle < 0:
+        angle = (abs(robot_angle) + 180 - abs(goal_angle)) * -1
+        print(f"Angle: {angle} =  (Robot Angle: {robot_angle} + 180 - Ball Angle: {goal_angle}) * -1")
+    elif 90 < robot_angle < 180 and goal_angle < 0:
+        angle = (180 - abs(robot_angle)) + (180 - abs(goal_angle))
+        print(f"Angle: {angle} = (180 - Robot Angle: {robot_angle}) + (180 - Ball Angle: {goal_angle})")
 
     print(f"Tip of the robot: {reference_point}")
     time.sleep(1)
