@@ -142,14 +142,14 @@ def close_gate():
     return
 
 def push_out():
-    Motor_PUSH.on(speed=-15)
+    Motor_PUSH.on(speed=-20)
     time.sleep(1)  # <-- vent så længe du vil køre motoren
     Motor_GATE.off()
    # Motor_PUSH.wait_until_not_moving(timeout=300)
     return
 
 def push_return():
-    Motor_PUSH.on(speed=15)
+    Motor_PUSH.on(speed=20)
     time.sleep(1)  # <-- vent så længe du vil køre motoren
     Motor_GATE.off()
    # Motor_PUSH.wait_until_not_moving(timeout=300)
