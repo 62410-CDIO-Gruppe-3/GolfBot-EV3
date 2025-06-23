@@ -14,7 +14,7 @@ from track_robot_v2 import get_robot_pose
 from Movement.AutonomousClient import send_and_receive, collect_VIP_ball, repeat_collection, robot_move_to_goal
 
 API_KEY = "BdmadiDKNX7YzP4unsUm"
-TRANSFORM_W, TRANSFORM_H = 1200, 1800
+TRANSFORM_W, TRANSFORM_H = 1800, 1200
 HOMOGRAPHY_FILE = ROOT.parent / "homography.npy"
 
 CONFIG = InferenceConfig(
@@ -45,8 +45,14 @@ def main() -> None:
 
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = run_inference(frame_rgb, CONFIG)
+        print(f"Received inference result: {result}")
+        print("Raw predictions:", result.get("predictions", []))
         if detections is None:
-            detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
+            filtered = [
+                p for p in result.get("predictions", [])
+                if p["confidence"] >= 0.05 and 10 <= p["width"] <= 200 and 10 <= p["height"] <= 200
+            ]
+        detections = [(p["x"], p["y"]) for p in filtered]
         transformed = transform_points(detections, H) if detections else []
 
         print(f"Detected {len(transformed)} points")
@@ -54,34 +60,34 @@ def main() -> None:
 
         goal_point = (1100, 900)
         pose = get_robot_pose(frame)
-        print(f"Robot position: {pose}")
-        (temp_x, temp_y), _ = pose
 
-        if pose:
+
+        if pose is not None:
+            print(f"Robot position: {pose}")
+            (temp_x, temp_y), robot_angle = pose
             transformed_robot_pose = transform_points([(temp_x, temp_y)], H)
             if transformed_robot_pose.any():
                 (tx, ty) = transformed_robot_pose[0]
                 print(f"Transformed robot position: {(tx, ty)}")
 
         if pose and transformed is not None and len(transformed) > 0:
-            (cx, cy), robot_angle = pose
 
-            print(f"Robot position: {(cx,cy)}")
+            print(f"Robot position: {(tx,ty)}")
             print(f"Robot angle: {robot_angle}")
             if mode == "collect":
                 closest = min(
                     transformed,
-                    key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
+                    key=lambda p: (p[0] - tx) ** 2 + (p[1] - ty) ** 2,
                 )
                 print(f"Closest point: {closest}")
                 for i in range(6):
-                    collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, iteration=i)
+                    collect_VIP_ball((tx, ty), closest, robot_angle=robot_angle, iteration=i)
                     time.sleep(1)
                 mode = "move"
                 continue  # Skip to next frame after collect
             elif mode == "move":
                 for i in range(8):
-                    robot_move_to_goal((cx, cy), goal_point, robot_angle=robot_angle, iteration=i)
+                    robot_move_to_goal((tx, ty), goal_point, robot_angle=robot_angle, iteration=i)
                     time.sleep(1)
                 mode = "collect"
                 continue  # Skip to next frame after move            (cx, cy), robot_angle = pose

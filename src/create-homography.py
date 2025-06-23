@@ -4,7 +4,7 @@ from pathlib import Path
 from ImageRecognition.Homography import create_homography, save_homography
 
 # Constants (matching main.py)
-TRANSFORM_W, TRANSFORM_H = 1200, 1800
+TRANSFORM_W, TRANSFORM_H = 1800, 1200
 HOMOGRAPHY_FILE = "homography.npy"
 
 def main():
@@ -27,7 +27,7 @@ def main():
     cv2.imwrite(temp_frame_path, frame)
 
     try:
-        print("Select 4 points clockwise (TL → TR → BR → BL)")
+        print("Select 4 points clockwise (BL → BR → TR → TL)")
         print("Press 'q' to abort")
         
         # Create homography matrix

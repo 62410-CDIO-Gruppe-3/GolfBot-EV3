@@ -116,5 +116,13 @@ def main() -> None:
     response = send_and_receive(CLOSE_GATE)
     print("Response from EV3:", response)
 
+response = send_and_receive(CLOCKWISE_REVOLUTION)
+print("Response from EV3:", response)
+time.sleep(1)
+
+response = send_and_receive(COUNTERCLOCKWISE_REVOLUTION)
+print("Response from EV3:", response)
+time.sleep(1)
+
 if __name__ == "__main__":
     main()
