@@ -16,9 +16,9 @@ from ev3dev2.motor import Motor, OUTPUT_A, OUTPUT_B, OUTPUT_C, OUTPUT_D
 # ----------------------------------------------------------------------
 # hardware
 # ----------------------------------------------------------------------
-Motor_GATE  = Motor(OUTPUT_A)
+Motor_GATE  = Motor(OUTPUT_D)
 print("Motor_GATE initialized")
-Motor_PUSH  = Motor(OUTPUT_D)
+Motor_PUSH  = Motor(OUTPUT_A)
 print("Motor_PUSH initialized")
 # ── Constants you set once ────────────────────────────────────────────
 STUD_MM            = 8.0      # LEGO grid pitch – keep at 8 mm

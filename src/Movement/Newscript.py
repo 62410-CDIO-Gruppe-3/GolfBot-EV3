@@ -5,96 +5,69 @@ import threading
 import queue
 import time
 
-from PathFinding.PointsGenerator import get_closest_path_point
+EV3_IP = "172.20.10.4"   # Update with your EV3's IP address
+PORT = 5532              # Must match the server's port
+TIMEOUT = 5.0            # Timeout in seconds for socket operations
+MAX_RETRIES = 3          # Number of connection retries
 
-from Movement.CommandLoop import collect_balls, move_to_goal
+OPEN_GATE_CMD = "open_gate()\n"
 
-
-print_lock = threading.Lock()
-EV3_IP = "172.20.10.4"   # ← IP address of your brick
-PORT = 5532                  # Must match the server's port
-TIMEOUT = 5.0               # Timeout in seconds for socket operations
-MAX_RETRIES = 3             # Maximum number of connection retries
-
-# Constants for robot movement
-
-ANGLE = 360
-DISTANCE = 100
-
-# ----------------------------------------------------------------------
-
-OPEN_GATE = f"open_gate()\n"
-CLOSE_GATE = f"close_gate()\n"
-PUSH_GATE = f"push_gate()\n"
-PUSH_RETURN = f"push_return()\n"
-MOVE_FORWARD = f"drive_straight_mm({DISTANCE})\n"
-MOVE_BACKWARD = f"drive_straight_mm({-DISTANCE})\n"
-CLOCKWISE_REVOLUTION = f"turn_left_deg({ANGLE})\n"
-COUNTERCLOCKWISE_REVOLUTION = f"turn_right_deg({ANGLE})\n"
-
-# ----------------------------------------------------------------------
-# Networking helper
-# ----------------------------------------------------------------------
-
-def receive_data(sock: socket.socket, result_queue: queue.Queue) -> None:
-    """Receive data from socket and put it in the result queue."""
+def receive_response(sock, result_queue):
+    """Receives data from EV3 and puts it in a queue."""
     try:
-        chunks: list[bytes] = []
-        while chunk := sock.recv(1024):
-            chunks.append(chunk)
-        result_queue.put(b"".join(chunks).decode("utf-8"))
+        data = []
+        while True:
+            chunk = sock.recv(1024)
+            if not chunk:
+                break
+            data.append(chunk)
+        result_queue.put(b"".join(data).decode("utf-8"))
     except Exception as e:
-        result_queue.put(f"Error receiving data: {str(e)}")
+        result_queue.put(f"Error receiving data: {e}")
 
-def create_socket() -> socket.socket:
-    """Create and configure a new socket."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(TIMEOUT)
-    return sock
-
-def send_and_receive(script: str) -> str:
-    """Send *script* to the EV3 and return its textual reply."""
+def send_and_receive_command(command):
+    """Sends a command to EV3 and returns the response."""
     for attempt in range(MAX_RETRIES):
         try:
-            sock = create_socket()
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(TIMEOUT)
             sock.connect((EV3_IP, PORT))
-            sock.sendall(script.encode("utf-8"))
+            sock.sendall(command.encode("utf-8"))
             sock.shutdown(socket.SHUT_WR)
 
             result_queue = queue.Queue()
-            receive_thread = threading.Thread(target=receive_data, args=(sock, result_queue))
-            receive_thread.daemon = True
-            receive_thread.start()
+            thread = threading.Thread(target=receive_response, args=(sock, result_queue))
+            thread.daemon = True
+            thread.start()
 
-            # Wait for response with timeout
             try:
                 response = result_queue.get(timeout=TIMEOUT)
-                sock.close()
                 return response
             except queue.Empty:
-                sock.close()
                 if attempt == MAX_RETRIES - 1:
-                    return "Timeout waiting for response from EV3"
+                    return "Timeout: No response from EV3"
                 continue
         except socket.timeout:
             if attempt == MAX_RETRIES - 1:
-                return "Connection timeout"
+                return "Connection to EV3 timed out"
             continue
         except ConnectionRefusedError:
             if attempt == MAX_RETRIES - 1:
-                return "Connection refused by EV3"
-            time.sleep(0.5)  # Wait before retrying
+                return "Connection was refused by EV3"
+            time.sleep(0.5)
             continue
         except Exception as e:
-            return f"Error: {str(e)}"
+            return f"Unexpected error: {e}"
         finally:
             try:
                 sock.close()
-            except:
+            except Exception:
                 pass
 
-def main() -> None:
-    print("Sending commands to EV3...")
-    # Substitute commands you want to test in the brackets below
-    response = send_and_receive(OPEN_GATE)
+def main():
+    print("Testing if the gate opens...")
+    response = send_and_receive_command(OPEN_GATE_CMD)
     print("Response from EV3:", response)
+
+if __name__ == "__main__":
+    main()
