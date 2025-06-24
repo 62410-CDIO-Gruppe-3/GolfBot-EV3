@@ -114,7 +114,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
 
     match iteration:
         case 0:
-            if 0 < angle < 180.0:
+            if 0 < angle:
                     input = f"turn_right_deg({angle})\n"
             else:
                     input = f"turn_left_deg({abs(angle)})\n"
@@ -234,7 +234,7 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
 
     match iteration:
         case 0:
-            if 0 < angle < 180.0:
+            if 0 < angle:
                     input = f"turn_right_deg({angle})\n"
             else:
                     input = f"turn_left_deg({abs(angle)})\n"
