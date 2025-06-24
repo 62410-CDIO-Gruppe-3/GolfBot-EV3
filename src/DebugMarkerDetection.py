@@ -72,6 +72,8 @@ def find_markers_with_reasons(mask: np.ndarray):
 
 def main():
     cap = cv2.VideoCapture(VIDEO_SRC)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():
         print("Could not open video source", VIDEO_SRC)
         return

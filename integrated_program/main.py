@@ -37,6 +37,8 @@ def main() -> None:
         return
 
     cap = cv2.VideoCapture(1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():  # pragma: no cover - runtime only
         print("Failed to open camera")
         return
@@ -78,8 +80,24 @@ def main() -> None:
                     key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
                 )
                 print(f"Closest point: {closest}")
-                for i in range(6):
-                    collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, iteration=i)
+                # Feedback-driven loop: keep updating position and sending commands until within 50mm
+                while True:
+                    # Re-capture frame for fresh position data
+                    ret, frame = cap.read()
+                    if not ret:
+                        print("Failed to grab frame during collection")
+                        break
+                    # Recompute pose and ball position for each step
+                    pose = get_robot_pose(frame, debug=False, homography=H)
+                    if pose is None:
+                        print("Lost robot pose. Trying again.")
+                        continue
+                    (cx, cy), robot_angle = pose
+                    # Optionally, re-detect balls here if you want to update ball position
+                    command_sent = collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, max_drive_mm=30.0)
+                    if not command_sent:
+                        print("No more commands needed (within 50mm or cannot proceed).")
+                        break
                 mode = "move"
                 continue  # Skip to next frame after collect
             elif mode == "move":

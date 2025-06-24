@@ -81,23 +81,26 @@ def collect_VIP_ball(
     reference_point, 
     destination_point,
     robot_angle: float = 0.0, 
-    iteration: int = 0
-) -> None:
+    max_drive_mm: float = 30.0,
+    angle_threshold: float = 10.0
+) -> bool:
     command = collect_balls(    
         reference_point, 
         destination_point,
         robot_angle=robot_angle, 
-        iteration=iteration
-        )
+        max_drive_mm=max_drive_mm,
+        angle_threshold=angle_threshold
+    )
     if command:
-        print(f"Generated commands for collecting the VIP Ball (iteration {iteration+1}):")
+        print(f"Generated command for collecting the VIP Ball:")
         print(command)
         script = command
         response = send_and_receive(script)
         print("Response from EV3:", response)
         time.sleep(1)
+        return True
     time.sleep(2)  
-    return
+    return False
 
 def robot_move_to_goal(
     reference_point, 

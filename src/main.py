@@ -19,7 +19,7 @@ import datetime
 API_KEY = "BdmadiDKNX7YzP4unsUm"
 TRANSFORM_W, TRANSFORM_H = 1800, 1200
 OUTPUT_DIR = "transformed_images"
-HOMOGRAPHY_FILE = "homography.npy"
+HOMOGRAPHY_FILE = "./src/homography.npy"
 TARGET_FPS = 10  # Process 5 frames per second
 
 # Create output directory if it doesn't exist
@@ -30,7 +30,6 @@ config = InferenceConfig(
     api_key=API_KEY,
     model_id="tabletennis-ball-detection/1",
 )
-
 # Load existing homography matrix
 try:
     H = load_homography(HOMOGRAPHY_FILE)
@@ -40,6 +39,8 @@ except Exception as e:
 
 # Initialize video capture, Use iriun.com to get the camera working.
 cap = cv2.VideoCapture(1)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 frame_count = 0
 last_frame_time = time.time()
@@ -77,6 +78,7 @@ while True:
     
     # Process frame: run inference, transform detections, and draw
     result = run_inference(frame_rgb, config)
+    print(result)
     detections = [(p["x"], p["y"]) for p in result.get("predictions", [])]
     # Draw detections directly on the original frame
     frame_with_balls = draw_points(frame, detections)

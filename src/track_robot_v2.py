@@ -277,6 +277,8 @@ def calibrate_markers(video_src=1, h_margin=10, sv_margin=40):
     Q / Esc – quit without saving
     """
     cap = cv2.VideoCapture(video_src)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():
         raise RuntimeError("Could not open video source " + str(video_src))
 

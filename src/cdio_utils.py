@@ -59,7 +59,7 @@ class InferenceConfig:
 # ---------------------------------------------------------------------------
 
 
-def load_image(path: str | Path, *, reduced_color: int = 2) -> np.ndarray:
+def load_image(path: str | Path, *, reduced_color: int = 0) -> np.ndarray:
     """Load an image from *path*.
 
     Parameters
@@ -195,7 +195,7 @@ def process_image(
     transform_size: tuple[int, int],
     cfg: InferenceConfig,
     *,
-    reduced_color: int = 2,
+    reduced_color: int = 0,
 ) -> tuple[np.ndarray, np.ndarray]:
     """One‑shot helper that reproduces the entire pipeline of the original script.
 
