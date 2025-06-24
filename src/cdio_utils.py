@@ -11,7 +11,7 @@ import math
 
 try:
     # Only import if the user actually needs inference.
-    from inference_sdk import InferenceHTTPClient  # type: ignore
+    from inference_sdk import InferenceHTTPClient, InferenceConfiguration  # type: ignore
 except ImportError:  # pragma: no cover – makes linting/tests happy when package is absent
     InferenceHTTPClient = None  # type: ignore
 
@@ -47,7 +47,9 @@ class InferenceConfig:
                 "inference‑sdk is not installed. Please `pip install inference‑sdk` "
                 "or add it to your project dependencies."
             )
+        custom_configuration = InferenceConfiguration(confidence_threshold=0.001)
         c = InferenceHTTPClient(api_url=self.api_url, api_key=self.api_key)
+        c.use_configuration(custom_configuration)
         c.select_model(self.model_id)
         return c
 
