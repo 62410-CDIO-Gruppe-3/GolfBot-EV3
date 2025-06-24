@@ -94,8 +94,21 @@ class _RobotTracker:
             self._centroid = None  # reset ROI search
 
     # ------------------------------ main update ---------------------------
-    def update(self, frame_bgr: np.ndarray, debug=False):
-        """Return pose or None; with *debug=True* also returns an overlay img."""
+    def update(
+        self,
+        frame_bgr: np.ndarray,
+        debug: bool = False,
+        homography: Optional[np.ndarray] = None,
+    ) -> Optional[
+        Tuple[Tuple[int, int], float] | Tuple[Tuple[int, int], float, np.ndarray]
+    ]:
+        """Return pose or None; with *debug=True* also returns an overlay img.
+
+        If *homography* (3×3) is supplied, the returned centroid and heading
+        are reported **in the transformed coordinate space**, i.e. after
+        applying the projective transform to both the front (pink) and back
+        (purple) marker positions.
+        """
         roi = self._roi_slices(frame_bgr.shape)
         crop = frame_bgr[roi] if roi else frame_bgr
 
@@ -137,19 +150,39 @@ class _RobotTracker:
         # --- promote ROI coords to full-frame -----------------------------
         offx = roi[1].start if roi else 0
         offy = roi[0].start if roi else 0
-        self._centroid = (cx + offx, cy + offy)
+        fx_full, fy_full = fx + offx, fy + offy
+        bx_full, by_full = bx + offx, by + offy
+
+        # --- apply homography if provided ---------------------------------
+        if homography is not None:
+            try:
+                pts = np.array([[fx_full, fy_full], [bx_full, by_full]], dtype=np.float32).reshape(-1, 1, 2)
+                pts_t = cv2.perspectiveTransform(pts, homography).reshape(-1, 2)
+                (fx_t, fy_t), (bx_t, by_t) = pts_t
+                cx_t, cy_t = (fx_t + bx_t) * 0.5, (fy_t + by_t) * 0.5
+                cx_out, cy_out = int(round(cx_t)), int(round(cy_t))
+                heading = degrees(atan2(fy_t - by_t, fx_t - bx_t))
+            except cv2.error as e:
+                print("[robot_tracker] WARNING: homography transform failed:", e)
+                # fall back to pixel coords
+                cx_out, cy_out = cx + offx, cy + offy
+        else:
+            # no homography
+            cx_out, cy_out = cx + offx, cy + offy
+
+        self._centroid = (cx + offx, cy + offy)  # still use image coords for ROI
         self._missed   = 0
         self._expected_d = 0.8 * self._expected_d + 0.2 * d if self._expected_d else d
 
         if not debug:
-            return (self._centroid, heading)
+            return ((cx_out, cy_out), heading)
 
         dbg = frame_bgr.copy()
-        cv2.circle(dbg, (fx + offx, fy + offy), 8, (  0,   0, 255), -1)  # red front
-        cv2.circle(dbg, (bx + offx, by + offy), 8, (255,   0,   0), -1)  # blue back
-        cv2.line  (dbg, (bx + offx, by + offy), (fx + offx, fy + offy), (  0, 255,   0), 2)
+        cv2.circle(dbg, (fx_full, fy_full), 8, (  0,   0, 255), -1)  # red front
+        cv2.circle(dbg, (bx_full, by_full), 8, (255,   0,   0), -1)  # blue back
+        cv2.line  (dbg, (bx_full, by_full), (fx_full, fy_full), (  0, 255,   0), 2)
         cv2.circle(dbg,  self._centroid,          6, (  0, 255, 255), -1)  # yellow centre
-        return (self._centroid, heading, dbg)
+        return ((cx_out, cy_out), heading, dbg)
 
 
 # ---------------------------------------------------------------------------
@@ -157,10 +190,40 @@ class _RobotTracker:
 _tracker = _RobotTracker()
 
 
-def get_robot_pose(frame_bgr: np.ndarray, debug: bool = False):
-    """Stateless façade around the internal tracker (see module docstring)."""
-    result = _tracker.update(frame_bgr, debug)
-    # Add this:
+def get_robot_pose(
+    frame_bgr: np.ndarray,
+    homography: Optional[np.ndarray] = None,
+    debug: bool = False,
+) -> Optional[
+    Tuple[Tuple[int, int], float] | Tuple[Tuple[int, int], float, np.ndarray]
+]:
+    """
+    Detect the robot's position and heading in *frame_bgr*.
+
+    The result can optionally be expressed in a different coordinate space by
+    supplying a 3×3 *homography* matrix. If provided, both the returned centre
+    point and heading angle are calculated **after** projecting the front and
+    back disc positions through *homography*.
+
+    Parameters
+    ----------
+    frame_bgr : np.ndarray
+        Input image in BGR order (OpenCV style).
+    homography : Optional[np.ndarray], default ``None``
+        3×3 projective transform matrix mapping image pixels to the target
+        coordinate space. If *None* the raw image coordinates are returned.
+    debug : bool, default ``False``
+        When *True*, an additional BGR debug image is returned.
+
+    Returns
+    -------
+    (centre, heading) or (centre, heading, debug_img) or ``None``
+        Exactly like before, except that *centre* and *heading* are mapped
+        through *homography* when one is supplied.
+    """
+    result = _tracker.update(frame_bgr, debug=debug, homography=homography)
+
+    # Retain verbose detection diagnostics for external logging
     hsv = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     pink_mask = cv2.morphologyEx(_tracker._colour_mask(hsv, PINK_HSV), cv2.MORPH_OPEN, kernel)
@@ -168,6 +231,7 @@ def get_robot_pose(frame_bgr: np.ndarray, debug: bool = False):
     pinks = _tracker._find_markers(pink_mask)
     purples = _tracker._find_markers(purple_mask)
     print(f"[DEBUG] Pink markers: {len(pinks)}, Purple markers: {len(purples)}")
+
     return result
 
 
