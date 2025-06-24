@@ -63,34 +63,28 @@ def main() -> None:
         print(f"Transformed points: {transformed}")
 
         goal_point = (100, 600)
-        pose = get_robot_pose(frame)
+        pose = get_robot_pose(frame, debug=False, homography=H)
 
 
         if pose is not None:
             print(f"Robot position: {pose}")
-            (temp_x, temp_y), robot_angle = pose
-            transformed_robot_pose = transform_points([(temp_x, temp_y)], H)
-            if transformed_robot_pose.any():
-                (tx, ty) = transformed_robot_pose[0]
-                print(f"Transformed robot position: {(tx, ty)}")
-
+            (cx, cy), robot_angle = pose
         if pose and transformed is not None and len(transformed) > 0:
-
-            print(f"Robot position: {(tx,ty)}")
+            print(f"Robot position: {(cx, cy)}")
             print(f"Robot angle: {robot_angle}")
             if mode == "collect":
                 closest = min(
                     transformed,
-                    key=lambda p: (p[0] - tx) ** 2 + (p[1] - ty) ** 2,
+                    key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
                 )
                 print(f"Closest point: {closest}")
                 for i in range(6):
-                    collect_VIP_ball((tx, ty), closest, robot_angle=robot_angle, iteration=i)
+                    collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, iteration=i)
                 mode = "move"
                 continue  # Skip to next frame after collect
             elif mode == "move":
                 for i in range(8):
-                    robot_move_to_goal((tx, ty), goal_point, robot_angle=robot_angle, iteration=i)
+                    robot_move_to_goal((cx, cy), goal_point, robot_angle=robot_angle, iteration=i)
                 mode = "collect"
                 continue  # Skip to next frame after move            (cx, cy), robot_angle = pose
 
