@@ -44,6 +44,10 @@ def main() -> None:
         return
 
     mode = "collect"
+    pose_stable_count = 0
+    POSE_STABLE_THRESHOLD = 3
+    last_pose = None
+    target_ball = None
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -59,27 +63,45 @@ def main() -> None:
                 if p["confidence"] >= 0.2 and 10 <= p["width"] <= 200 and 10 <= p["height"] <= 200
             ]
         detections = [(p["x"], p["y"]) for p in filtered]
+        print(f"[DEBUG] Detections: {detections}")
         transformed = transform_points(detections, H) if detections else []
-
         print(f"Detected {len(transformed)} points")
         print(f"Transformed points: {transformed}")
+        print(f"[DEBUG] Transformed points: {transformed}")
 
+        print(f"[DEBUG] mode: {mode}")
         goal_point = (100, 600)
         pose = get_robot_pose(frame, debug=False, homography=H)
-
+        print(f"[DEBUG] pose: {pose}")
 
         if pose is not None:
-            print(f"Robot position: {pose}")
-            (cx, cy), robot_angle = pose
-        if pose and transformed is not None and len(transformed) > 0:
+            pose_stable_count += 1
+            last_pose = pose
+        else:
+            pose_stable_count = 0
+            last_pose = None
+
+        if pose_stable_count < POSE_STABLE_THRESHOLD:
+            print(f"[DEBUG] Waiting for stable pose... ({pose_stable_count}/{POSE_STABLE_THRESHOLD})")
+            frame_disp = draw_points(frame, detections)
+            cv2.imshow("Integrated", frame_disp)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
+            continue
+
+        (cx, cy), robot_angle = last_pose
+        if transformed is not None and len(transformed) > 0:
             print(f"Robot position: {(cx, cy)}")
             print(f"Robot angle: {robot_angle}")
             if mode == "collect":
-                closest = min(
-                    transformed,
-                    key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
-                )
-                print(f"Closest point: {closest}")
+                if target_ball is None:
+                    target_ball = min(
+                        transformed,
+                        key=lambda p: (p[0] - cx) ** 2 + (p[1] - cy) ** 2,
+                    )
+                    print(f"[DEBUG] New target ball: {target_ball}")
+                else:
+                    print(f"[DEBUG] Continuing with target ball: {target_ball}")
                 # Feedback-driven loop: keep updating position and sending commands until within 50mm
                 while True:
                     # Re-capture frame for fresh position data
@@ -87,23 +109,34 @@ def main() -> None:
                     if not ret:
                         print("Failed to grab frame during collection")
                         break
-                    # Recompute pose and ball position for each step
                     pose = get_robot_pose(frame, debug=False, homography=H)
-                    if pose is None:
-                        print("Lost robot pose. Trying again.")
+                    print(f"[DEBUG] pose (collect loop): {pose}")
+                    if pose is not None:
+                        pose_stable_count += 1
+                        last_pose = pose
+                    else:
+                        pose_stable_count = 0
+                        last_pose = None
+                    if pose_stable_count < POSE_STABLE_THRESHOLD:
+                        print(f"[DEBUG] Waiting for stable pose in collect loop... ({pose_stable_count}/{POSE_STABLE_THRESHOLD})")
                         continue
-                    (cx, cy), robot_angle = pose
+                    (cx, cy), robot_angle = last_pose
                     # Optionally, re-detect balls here if you want to update ball position
-                    command_sent = collect_VIP_ball((cx, cy), closest, robot_angle=robot_angle, max_drive_mm=30.0)
+                    command_sent = collect_VIP_ball((cx, cy), target_ball, robot_angle=robot_angle, max_drive_mm=30.0)
+                    print(f"[DEBUG] collect_VIP_ball returned: {command_sent}")
                     if not command_sent:
                         print("No more commands needed (within 50mm or cannot proceed).")
                         break
+                target_ball = None  # Clear after collection
                 mode = "move"
+                print(f"[DEBUG] Switching mode to: {mode}")
                 continue  # Skip to next frame after collect
             elif mode == "move":
                 for i in range(8):
+                    print(f"[DEBUG] robot_move_to_goal iteration: {i}")
                     robot_move_to_goal((cx, cy), goal_point, robot_angle=robot_angle, iteration=i)
                 mode = "collect"
+                print(f"[DEBUG] Switching mode to: {mode}")
                 continue  # Skip to next frame after move            (cx, cy), robot_angle = pose
 
         frame_disp = draw_points(frame, detections)

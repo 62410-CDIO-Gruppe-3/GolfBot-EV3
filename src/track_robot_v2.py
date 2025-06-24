@@ -109,6 +109,7 @@ class _RobotTracker:
         applying the projective transform to both the front (pink) and back
         (purple) marker positions.
         """
+        print(f"[DEBUG] _RobotTracker.update called. frame_bgr.shape={frame_bgr.shape}")
         roi = self._roi_slices(frame_bgr.shape)
         crop = frame_bgr[roi] if roi else frame_bgr
 
@@ -120,9 +121,12 @@ class _RobotTracker:
 
         pinks  = self._find_markers(pink_m)
         purps  = self._find_markers(purple_m)
-        print(f"[DEBUG] Pink markers: {len(pinks)}, Purple markers: {len(purps)}")
+        print(f"[DEBUG] _RobotTracker.update: Pink markers: {len(pinks)}, Purple markers: {len(purps)}")
+        print(f"[DEBUG] _RobotTracker.update: Pink marker positions: {pinks}")
+        print(f"[DEBUG] _RobotTracker.update: Purple marker positions: {purps}")
         if not pinks or not purps:
             self._register_miss()
+            print("[DEBUG] _RobotTracker.update: No valid marker pair found. Returning None.")
             return None
 
         # ---------- choose the best magenta–purple pair -------------------
@@ -174,6 +178,7 @@ class _RobotTracker:
         self._missed   = 0
         self._expected_d = 0.8 * self._expected_d + 0.2 * d if self._expected_d else d
 
+        print(f"[DEBUG] _RobotTracker.update: Chosen pose: (({cx_out}, {cy_out}), heading={heading})")
         if not debug:
             return ((cx_out, cy_out), heading)
 
@@ -221,6 +226,7 @@ def get_robot_pose(
         Exactly like before, except that *centre* and *heading* are mapped
         through *homography* when one is supplied.
     """
+    print(f"[DEBUG] get_robot_pose called. frame_bgr.shape={frame_bgr.shape}")
     result = _tracker.update(frame_bgr, debug=debug, homography=homography)
 
     # Retain verbose detection diagnostics for external logging
@@ -230,8 +236,10 @@ def get_robot_pose(
     purple_mask = cv2.morphologyEx(_tracker._colour_mask(hsv, PURPLE_HSV), cv2.MORPH_OPEN, kernel)
     pinks = _tracker._find_markers(pink_mask)
     purples = _tracker._find_markers(purple_mask)
-    print(f"[DEBUG] Pink markers: {len(pinks)}, Purple markers: {len(purples)}")
-
+    print(f"[DEBUG] get_robot_pose: Pink markers: {len(pinks)}, Purple markers: {len(purples)}")
+    print(f"[DEBUG] get_robot_pose: Pink marker positions: {pinks}")
+    print(f"[DEBUG] get_robot_pose: Purple marker positions: {purples}")
+    print(f"[DEBUG] get_robot_pose: Result: {result}")
     return result
 
 

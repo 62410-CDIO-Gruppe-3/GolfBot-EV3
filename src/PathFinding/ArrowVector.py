@@ -15,7 +15,7 @@ class ArrowVector:
         """
         self.point_a = point_a
         self.point_b = point_b
-        self._vector = (point_b[0] - point_a[0], (point_b[1] - point_a[1]) * - 1)
+        self._vector = (point_b[0] - point_a[0], (point_b[1] - point_a[1]))
     
     def get_x(self) -> int:
         """Return the horizontal component of the vector."""
