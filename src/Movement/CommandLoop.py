@@ -154,7 +154,7 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     
     if -180 <= robot_angle <= -90 and -180 <= goal_angle <= -90 and abs(robot_angle) <= abs(goal_angle):
     # Both in Quadrant 4 (ball angle greater than robot angle)
-        angle = goal_angle + robot_angle
+        angle = goal_angle - robot_angle
     elif -180 <= robot_angle <= -90 and -180 <= goal_angle <= -90 and abs(robot_angle) >= abs(goal_angle):
     # Both in Quadrant 4 (robot angle greater than ball angle)
         angle = (abs(robot_angle) - abs(goal_angle)) * -1
@@ -171,7 +171,7 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
 
     elif -90 < robot_angle <= 0 and -180 <= goal_angle <= -90:
     # Robot in Q3, Ball in Q4
-        angle = goal_angle + robot_angle
+        angle = goal_angle - robot_angle
     elif -90 < robot_angle <= 0 and -90 < goal_angle <= 0 and abs(robot_angle) <= abs(goal_angle):
     # Both in Q3 (ball angle greater than robot angle)
         angle = goal_angle + robot_angle
