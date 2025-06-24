@@ -28,7 +28,8 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
     angle = 0
 
     print(f"robot_angle: {robot_angle}, ball_angle: {ball_angle}")
-    
+
+    '''
     if robot_angle <= 0 and ball_angle <= 0 and abs(robot_angle) <= abs(ball_angle):
         angle = (abs(ball_angle) - abs(robot_angle))* -1
         print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {ball_angle}")
@@ -48,22 +49,92 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
         angle = (abs(robot_angle) - abs(ball_angle))* -1
         print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {ball_angle}")
     elif 0 < robot_angle < 90 and ball_angle < 0:
-        angle = (abs(robot_angle) + 180 - abs(ball_angle)) * -1
+        angle = (abs(robot_angle) + 180 - abs(ball_angle)) *-1
         print(f"Angle: {angle} =  (Robot Angle: {robot_angle} + 180 - Ball Angle: {ball_angle}) * -1")
-    elif 90 < robot_angle < 180 and ball_angle < 0:
-        angle = (180 - abs(robot_angle)) + (180 - abs(ball_angle))
+    elif 90 < robot_angle < 180 and -90 < ball_angle < 0:
+        angle = (abs(robot_angle) + 180 - abs(ball_angle))*-1
         print(f"Angle: {angle} = (180 - Robot Angle: {robot_angle}) + (180 - Ball Angle: {ball_angle})")
+    '''
+
+    if -180 <= robot_angle <= -90 and -180 <= ball_angle <= -90 and abs(robot_angle) <= abs(ball_angle):
+    # Both in Quadrant 4 (ball angle greater than robot angle)
+        angle = ball_angle + robot_angle
+    elif -180 <= robot_angle <= -90 and -180 <= ball_angle <= -90 and abs(robot_angle) >= abs(ball_angle):
+    # Both in Quadrant 4 (robot angle greater than ball angle)
+        angle = (abs(robot_angle) - abs(ball_angle)) * -1
+    elif -180 <= robot_angle <= -90 and -90 < ball_angle <= 0:
+    # Robot in Q4, Ball in Q3
+        angle = (abs(robot_angle) + abs(ball_angle)) * -1
+    elif -180 <= robot_angle <= -90 and 0 < ball_angle <= 90:
+    # Robot in Q4, Ball in Q2
+        angle = (180 - abs(robot_angle)) + ball_angle
+    elif -180 <= robot_angle <= -90 and 90 < ball_angle <= 180:
+    # Robot in Q4, Ball in Q1
+        angle = (180 - abs(robot_angle)) + (180 - ball_angle)
+        angle *= -1
+
+    elif -90 < robot_angle <= 0 and -180 <= ball_angle <= -90:
+    # Robot in Q3, Ball in Q4
+        angle = ball_angle + robot_angle
+    elif -90 < robot_angle <= 0 and -90 < ball_angle <= 0 and abs(robot_angle) <= abs(ball_angle):
+    # Both in Q3 (ball angle greater than robot angle)
+        angle = ball_angle + robot_angle
+    elif -90 < robot_angle <= 0 and -90 < ball_angle <= 0 and abs(robot_angle) >= abs(ball_angle):
+    # Both in Q3 (robot angle greater than ball angle)
+        angle = (abs(robot_angle) - abs(ball_angle)) * -1
+    elif -90 < robot_angle <= 0 and 0 < ball_angle <= 90:
+    # Robot in Q3, Ball in Q2
+        angle = abs(robot_angle) + ball_angle
+    elif -90 < robot_angle <= 0 and 90 < ball_angle <= 180:
+    # Robot in Q3, Ball in Q1
+        angle = (180 + robot_angle) + (180 - ball_angle)
+        angle *= -1
+
+    elif 0 < robot_angle <= 90 and -180 <= ball_angle <= -90:
+    # Robot in Q2, Ball in Q4
+        angle = (180 - abs(ball_angle)) + robot_angle
+    elif 0 < robot_angle <= 90 and -90 < ball_angle <= 0:
+    # Robot in Q2, Ball in Q3
+        angle = (robot_angle + abs(ball_angle)) - 1
+    elif 0 < robot_angle <= 90 and 0 < ball_angle <= 90 and abs(robot_angle) <= abs(ball_angle):
+    # Both in Q2  (ball angle greater than robot angle)
+        angle = ball_angle - robot_angle
+    elif 0 < robot_angle <= 90 and 0 < ball_angle <= 90 and abs(robot_angle) >= abs(ball_angle):
+    # Both in Q2 (robot angle greater than ball angle)
+        angle = (abs(robot_angle) - abs(ball_angle)) * -1
+    elif 0 < robot_angle <= 90 and 90 < ball_angle <= 180:
+    # Robot in Q2, Ball in Q1
+        angle = (ball_angle - robot_angle)
+
+    elif 90 < robot_angle <= 180 and -180 <= ball_angle <= -90:
+    # Robot in Q1, Ball in Q4
+        angle = (180 - abs(ball_angle)) + (180 - robot_angle)
+    elif 90 < robot_angle <= 180 and -90 < ball_angle <= 0:
+    # Robot in Q1, Ball in Q3
+        angle = (180 + ball_angle) + (robot_angle - 180)
+        angle *= -1
+    elif 90 < robot_angle <= 180 and 0 < ball_angle <= 90:
+    # Robot in Q1, Ball in Q2
+        angle = ball_angle + (robot_angle - 180)
+        angle *= -1
+    elif 90 < robot_angle <= 180 and 90 < ball_angle <= 180 and abs(robot_angle) <= abs(ball_angle):
+    # Both in Q1  (ball angle greater than robot angle)
+        angle = ball_angle - robot_angle
+    elif 90 < robot_angle <= 180 and 90 < ball_angle <= 180 and abs(robot_angle) >= abs(ball_angle):
+    # Both in Q1 (robot angle greater than ball angle)
+        angle = (abs(robot_angle) - abs(ball_angle)) * -1
+    else:
+        angle = 0
+        print("Unhandled angle case")
+
+    print(f"Final Angle: {angle} = Robot: {robot_angle}, Ball: {ball_angle}")
+
 
     print(f"Tip of the robot: {reference_point}")
-    time.sleep(1)
     print(f"Destination: {destination_point}")
-    time.sleep(1)
     print(f"Robot angle: {robot_angle}")
-    time.sleep(1)
     print(f"Ball angle: {ball_angle}")
-    time.sleep(1)
-    #print(f"Angle: {angle}")
-    #time.sleep(1)
+    print(f"Angle: {angle}")
 
 
     print(f"Distance: {distance},\n Ball Angle: {ball_angle},\n Robot Angle: {robot_angle}")
@@ -75,7 +146,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
             else:
                     input = f"turn_left_deg({abs(angle)})\n"
         case 1:
-                input = f"drive_straight_mm({distance - 50})\n"
+                input = f"drive_straight_mm({distance - 75})\n"
         case 2:  
                 input = f"open_gate()\n"
         case 3:
@@ -108,6 +179,7 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     distance = vector.get_size()
     goal_angle = vector.get_angle()
     
+    ''' 
     if robot_angle <= 0 and goal_angle <= 0 and abs(robot_angle) <= abs(goal_angle):
         angle = (abs(goal_angle) - abs(robot_angle))* -1
         print(f"Angle: {angle} = Robot Angle: {robot_angle} - Ball Angle: {goal_angle}")
@@ -132,17 +204,74 @@ def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
     elif 90 < robot_angle < 180 and goal_angle < 0:
         angle = (180 - abs(robot_angle)) + (180 - abs(goal_angle))
         print(f"Angle: {angle} = (180 - Robot Angle: {robot_angle}) + (180 - Ball Angle: {goal_angle})")
+        '''
+
+    if -180 <= robot_angle <= -90 and -180 <= goal_angle <= -90:
+    # Both in Quadrant 4
+        angle = goal_angle - robot_angle
+    elif -180 <= robot_angle <= -90 and -90 < goal_angle <= 0:
+    # Robot in Q4, Goal in Q3
+        angle = (abs(robot_angle) + abs(goal_angle)) * -1
+    elif -180 <= robot_angle <= -90 and 0 < goal_angle <= 90:
+    # Robot in Q4, Goal in Q2
+        angle = (180 - abs(robot_angle)) + goal_angle
+    elif -180 <= robot_angle <= -90 and 90 < goal_angle <= 180:
+    # Robot in Q4, Goal in Q1
+        angle = (180 - abs(robot_angle)) + (180 - goal_angle)
+        angle *= -1
+
+    elif -90 < robot_angle <= 0 and -180 <= goal_angle <= -90:
+    # Robot in Q3, Goal in Q4
+        angle = (180 - abs(goal_angle)) + (180 - abs(robot_angle))
+    elif -90 < robot_angle <= 0 and -90 < goal_angle <= 0:
+    # Both in Q3
+        angle = goal_angle - robot_angle
+    elif -90 < robot_angle <= 0 and 0 < goal_angle <= 90:
+    # Robot in Q3, Goal in Q2
+        angle = abs(robot_angle) + goal_angle
+    elif -90 < robot_angle <= 0 and 90 < goal_angle <= 180:
+    # Robot in Q3, Goal in Q1
+        angle = (180 + robot_angle) + (180 - goal_angle)
+        angle *= -1
+
+    elif 0 < robot_angle <= 90 and -180 <= goal_angle <= -90:
+    # Robot in Q2, Goal in Q4
+        angle = (180 - abs(goal_angle)) + robot_angle
+    elif 0 < robot_angle <= 90 and -90 < goal_angle <= 0:
+    # Robot in Q2, Goal in Q3
+        angle = (robot_angle + abs(goal_angle)) - 1
+    elif 0 < robot_angle <= 90 and 0 < goal_angle <= 90:
+    # Both in Q2
+        angle = goal_angle - robot_angle
+    elif 0 < robot_angle <= 90 and 90 < goal_angle <= 180:
+    # Robot in Q2, Goal in Q1
+        angle = (goal_angle - robot_angle)
+
+    elif 90 < robot_angle <= 180 and -180 <= goal_angle <= -90:
+    # Robot in Q1, Goal in Q4
+        angle = (180 - abs(goal_angle)) + (180 - robot_angle)
+    elif 90 < robot_angle <= 180 and -90 < goal_angle <= 0:
+    # Robot in Q1, Goal in Q3
+        angle = (180 + goal_angle) + (robot_angle - 180)
+        angle *= -1
+    elif 90 < robot_angle <= 180 and 0 < goal_angle <= 90:
+    # Robot in Q1, Goal in Q2
+        angle = goal_angle + (robot_angle - 180)
+        angle *= -1
+    elif 90 < robot_angle <= 180 and 90 < goal_angle <= 180:
+    # Both in Q1
+        angle = goal_angle - robot_angle
+    else:
+        angle = 0
+    print("Unhandled angle case")
+
+    print(f"Final Angle: {angle} = Robot: {robot_angle}, Ball: {goal_angle}")
 
     print(f"Tip of the robot: {reference_point}")
-    time.sleep(1)
     print(f"Destination: {goal_point}")
-    time.sleep(1)
     print(f"Robot angle: {robot_angle}")
-    time.sleep(1)
     print(f"Goal angle: {goal_angle}")
-    time.sleep(1)
     print(f"Angle: {angle}")
-    time.sleep(1)
 
     match iteration:
         case 0:

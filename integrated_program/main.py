@@ -54,7 +54,7 @@ def main() -> None:
         if detections is None:
             filtered = [
                 p for p in result.get("predictions", [])
-                if p["confidence"] >= 0.05 and 10 <= p["width"] <= 200 and 10 <= p["height"] <= 200
+                if p["confidence"] >= 0.2 and 10 <= p["width"] <= 200 and 10 <= p["height"] <= 200
             ]
         detections = [(p["x"], p["y"]) for p in filtered]
         transformed = transform_points(detections, H) if detections else []

@@ -118,7 +118,7 @@ class _RobotTracker:
         for (px, py, _), (ux, uy, _) in [(p, u) for p in pinks for u in purps]:
             d = hypot(px - ux, py - uy)
             print(f"[DEBUG] Pair: pink=({px},{py}), purple=({ux},{uy}), distance={d:.2f}, expected={exp:.2f}")
-            if not (0.4 * exp <= d <= 1.5 * exp):
+            if not (0.5 * exp <= d <= 1.5 * exp):
                 print(f"[DEBUG] Pair rejected: distance {d:.2f} not in [{0.6*exp:.2f}, {1.4*exp:.2f}]")
                 continue
             score = abs(d - exp)
