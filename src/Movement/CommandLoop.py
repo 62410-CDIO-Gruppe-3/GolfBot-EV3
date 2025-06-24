@@ -31,7 +31,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
 
     if -180 <= robot_angle <= -90 and -180 <= ball_angle <= -90 and abs(robot_angle) <= abs(ball_angle):
     # Both in Quadrant 4 (ball angle greater than robot angle)
-        angle = ball_angle + robot_angle
+        angle = ball_angle - robot_angle
     elif -180 <= robot_angle <= -90 and -180 <= ball_angle <= -90 and abs(robot_angle) >= abs(ball_angle):
     # Both in Quadrant 4 (robot angle greater than ball angle)
         angle = (abs(robot_angle) - abs(ball_angle)) * -1
@@ -51,7 +51,7 @@ def collect_balls(reference_point, destination_point, robot_angle, iteration: in
         angle = ball_angle + robot_angle
     elif -90 < robot_angle <= 0 and -90 < ball_angle <= 0 and abs(robot_angle) <= abs(ball_angle):
     # Both in Q3 (ball angle greater than robot angle)
-        angle = ball_angle + robot_angle
+        angle = ball_angle - robot_angle
     elif -90 < robot_angle <= 0 and -90 < ball_angle <= 0 and abs(robot_angle) >= abs(ball_angle):
     # Both in Q3 (robot angle greater than ball angle)
         angle = (abs(robot_angle) - abs(ball_angle)) * -1
