@@ -62,7 +62,7 @@ def main() -> None:
         print(f"Detected {len(transformed)} points")
         print(f"Transformed points: {transformed}")
 
-        goal_point = (1100, 900)
+        goal_point = (100, 600)
         pose = get_robot_pose(frame)
 
 
