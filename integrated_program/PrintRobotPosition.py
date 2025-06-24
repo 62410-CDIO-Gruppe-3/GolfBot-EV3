@@ -10,7 +10,7 @@ sys.path.append(str(ROOT))
 
 from cdio_utils import InferenceConfig, run_inference, transform_points, draw_points
 from ImageRecognition.Homography import load_homography
-from track_robot_v2 import get_robot_pose
+from test_robot_v2 import get_robot_pose
 
 API_KEY = "BdmadiDKNX7YzP4unsUm"
 TRANSFORM_W, TRANSFORM_H = 1800, 1200
@@ -24,6 +24,8 @@ def main() -> None:
         return
 
     cap = cv2.VideoCapture(1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():  # pragma: no cover - runtime only
         print("Failed to open camera")
         return

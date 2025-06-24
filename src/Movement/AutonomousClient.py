@@ -5,11 +5,9 @@ import threading
 import queue
 import time
 
-from Movement.CommandLoop import collect_balls, move_to_goal
-
 
 print_lock = threading.Lock()
-EV3_IP = "192.168.82.36"   # ← IP address of your brick
+EV3_IP = "172.20.10.6"   # ← IP address of your brick
 PORT = 5532                  # Must match the server's port
 TIMEOUT = 5.0               # Timeout in seconds for socket operations
 MAX_RETRIES = 3             # Maximum number of connection retries
@@ -76,69 +74,3 @@ def send_and_receive(script: str) -> str:
                 pass
 
 # ----------------------------------------------------------------------
-
-def collect_VIP_ball(    
-    reference_point, 
-    destination_point,
-    robot_angle: float = 0.0, 
-    iteration: int = 0
-) -> None:
-    command = collect_balls(    
-        reference_point, 
-        destination_point,
-        robot_angle=robot_angle, 
-        iteration=iteration
-        )
-    if command:
-        print(f"Generated commands for collecting the VIP Ball (iteration {iteration+1}):")
-        print(command)
-        script = command
-        response = send_and_receive(script)
-        print("Response from EV3:", response)
-        time.sleep(1)
-    time.sleep(2)  
-    return
-
-def robot_move_to_goal(
-    reference_point, 
-    goal_point = None,
-    robot_angle: float = 0.0,
-    iteration: int = 8
-) -> None:
-    command = move_to_goal(
-        reference_point, 
-        goal_point,
-        robot_angle=robot_angle,  
-        iteration=iteration
-    )
-    if command:
-        print(f"GOAL: Generated command for iteration: {iteration+1}" )
-        print(command)
-        script = command
-        response = send_and_receive(script)
-        print("Response from EV3:", response)
-    return
-
-def repeat_collection(
-    reference_point, 
-    destination_point,
-    robot_angle: float = 0.0,
-    inner_iteration: int = 6,
-    outer_iteration: int = 5
-) -> None:
-    tip = reference_point
-    for i in range(outer_iteration):
-        for j in range(inner_iteration):
-            command = collect_balls(
-                tip,
-                destination_point,
-                robot_angle=robot_angle,
-                iteration=j)
-            if command:
-                print(f"Generated command for iterations: (outer {i+1}, inner {j+1}):")
-                print(command)
-                script = command
-                response = send_and_receive(script)
-                print("Response from EV3:", response)
-        print("AutonomousClient: Collecting ball at destination: ", destination_point)
-    return

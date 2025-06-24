@@ -152,6 +152,8 @@ def transform_points(
     points: Sequence[Tuple[float, float]], H: np.ndarray
 ) -> np.ndarray:
     """Apply homography *H* to *points* and return an N×2 array of transformed coordinates."""
+    if not points:
+        return np.empty((0, 2), dtype=np.float32)
     pts = _to_points_array(points)
     transformed = cv2.perspectiveTransform(pts, H)
     return transformed.reshape(-1, 2)

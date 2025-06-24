@@ -1,255 +1,119 @@
 import math
-import time
 
-from PathFinding.PointsGenerator import get_closest_path_point
 from PathFinding.ArrowVector import ArrowVector
 
+# Constants for movement control
+TURN_THRESHOLD_DEG = 20
+MAX_DRIVE_MM = 100
+BALL_PROXIMITY_MM = 75  # How close to get to the ball before collection
+GOAL_PROXIMITY_MM = 50  # How close to get to the goal before dropping
 
-def collect_balls(reference_point, destination_point, robot_angle, iteration: int = 0):
+
+def _calculate_turn_angle(robot_angle, target_angle):
+    """Calculates the shortest angle for the robot to turn."""
+    turn_angle = target_angle - robot_angle
+    # Normalize angle to -180, 180
+    while turn_angle > 180:
+        turn_angle -= 360
+    while turn_angle < -180:
+        turn_angle += 360
+    return turn_angle
+
+
+def get_command_to_ball(reference_point, destination_point, robot_angle):
     """
-    Create an input dictionary for the pathfinding algorithm.
-
-    Args:
-        image (np.ndarray): The input image (BGR).
-        arrow_template (np.ndarray): Grayscale arrow template image.
-        transformed_points (list or np.ndarray): List of (x, y) points.
-
-    Returns:
-        dict: Input dictionary containing transformed points and arrow vectors.
+    Generates a single command to move towards a ball.
+    Returns a movement command string, or None if at the destination.
     """
-    print("Moving to collect balls...")
-
     if reference_point is None or destination_point is None:
         return None
-    
+
     vector = ArrowVector(reference_point, destination_point)
     distance = vector.get_size()
-    ball_angle = vector.get_angle()
-    angle = 0
+    target_angle = vector.get_angle()
 
-    print(f"robot_angle: {robot_angle}, ball_angle: {ball_angle}")
+    # If we are close enough, signal to start collection
+    if distance <= BALL_PROXIMITY_MM:
+        return None
 
-    if -180 <= robot_angle <= -90 and -180 <= ball_angle <= -90 and abs(robot_angle) <= abs(ball_angle):
-    # Both in Quadrant 4 (ball angle greater than robot angle)
-        angle = ball_angle + robot_angle
-    elif -180 <= robot_angle <= -90 and -180 <= ball_angle <= -90 and abs(robot_angle) >= abs(ball_angle):
-    # Both in Quadrant 4 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(ball_angle)) * -1
-    elif -180 <= robot_angle <= -90 and -90 < ball_angle <= 0:
-    # Robot in Q4, Ball in Q3
-        angle = (abs(robot_angle) + abs(ball_angle)) * -1
-    elif -180 <= robot_angle <= -90 and 0 < ball_angle <= 90:
-    # Robot in Q4, Ball in Q2
-        angle = (180 - abs(robot_angle)) + ball_angle
-    elif -180 <= robot_angle <= -90 and 90 < ball_angle <= 180:
-    # Robot in Q4, Ball in Q1
-        angle = (180 - abs(robot_angle)) + (180 - ball_angle)
-        angle *= -1
+    turn_angle = _calculate_turn_angle(robot_angle, target_angle)
 
-    elif -90 < robot_angle <= 0 and -180 <= ball_angle <= -90:
-    # Robot in Q3, Ball in Q4
-        angle = ball_angle + robot_angle
-    elif -90 < robot_angle <= 0 and -90 < ball_angle <= 0 and abs(robot_angle) <= abs(ball_angle):
-    # Both in Q3 (ball angle greater than robot angle)
-        angle = ball_angle + robot_angle
-    elif -90 < robot_angle <= 0 and -90 < ball_angle <= 0 and abs(robot_angle) >= abs(ball_angle):
-    # Both in Q3 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(ball_angle)) * -1
-    elif -90 < robot_angle <= 0 and 0 < ball_angle <= 90:
-    # Robot in Q3, Ball in Q2
-        angle = abs(robot_angle) + ball_angle
-    elif -90 < robot_angle <= 0 and 90 < ball_angle <= 180:
-    # Robot in Q3, Ball in Q1
-        angle = (180 + robot_angle) + (180 - ball_angle)
-        angle *= -1
+    print(f"Robot Angle: {robot_angle:.2f}, Ball Angle: {target_angle:.2f}, Turn Angle: {turn_angle:.2f}, Distance: {distance:.2f}")
 
-    elif 0 < robot_angle <= 90 and -180 <= ball_angle <= -90:
-    # Robot in Q2, Ball in Q4
-        angle = (180 - abs(ball_angle)) + robot_angle
-    elif 0 < robot_angle <= 90 and -90 < ball_angle <= 0:
-    # Robot in Q2, Ball in Q3
-        angle = (robot_angle + abs(ball_angle)) - 1
-    elif 0 < robot_angle <= 90 and 0 < ball_angle <= 90 and abs(robot_angle) <= abs(ball_angle):
-    # Both in Q2  (ball angle greater than robot angle)
-        angle = ball_angle - robot_angle
-    elif 0 < robot_angle <= 90 and 0 < ball_angle <= 90 and abs(robot_angle) >= abs(ball_angle):
-    # Both in Q2 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(ball_angle)) * -1
-    elif 0 < robot_angle <= 90 and 90 < ball_angle <= 180:
-    # Robot in Q2, Ball in Q1
-        angle = (ball_angle - robot_angle)
-
-    elif 90 < robot_angle <= 180 and -180 <= ball_angle <= -90:
-    # Robot in Q1, Ball in Q4
-        angle = (180 - abs(ball_angle)) + (180 - robot_angle)
-    elif 90 < robot_angle <= 180 and -90 < ball_angle <= 0:
-    # Robot in Q1, Ball in Q3
-        angle = (180 + ball_angle) + (robot_angle - 180)
-        angle *= -1
-    elif 90 < robot_angle <= 180 and 0 < ball_angle <= 90:
-    # Robot in Q1, Ball in Q2
-        angle = ball_angle + (robot_angle - 180)
-        angle *= -1
-    elif 90 < robot_angle <= 180 and 90 < ball_angle <= 180 and abs(robot_angle) <= abs(ball_angle):
-    # Both in Q1  (ball angle greater than robot angle)
-        angle = ball_angle - robot_angle
-    elif 90 < robot_angle <= 180 and 90 < ball_angle <= 180 and abs(robot_angle) >= abs(ball_angle):
-    # Both in Q1 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(ball_angle)) * -1
+    # Stepwise scaling of max turn angle based on distance to ball
+    if distance > 2 * BALL_PROXIMITY_MM:
+        max_turn_deg = 30
+    elif distance > 1.5 * BALL_PROXIMITY_MM:
+        max_turn_deg = 10
     else:
-        angle = 0
-        print("Unhandled angle case")
+        max_turn_deg = 5
+    max_turn_deg = max(max_turn_deg, 5)  # Never allow less than 5 deg unless actual turn is less
 
-    print(f"Final Angle: {angle} = Robot: {robot_angle}, Ball: {ball_angle}")
+    # If we need to turn more than the threshold, send a turn command
+    if abs(turn_angle) > TURN_THRESHOLD_DEG:
+        turn_amount = min(abs(turn_angle), max_turn_deg)
+        if turn_angle > 0:
+            return f"turn_left_deg({turn_amount:.2f})\n"
+        else:
+            return f"turn_right_deg({turn_amount:.2f})\n"
+    
+    # Drive forward and do ball collection using the existing function
+    drive_dist = min(MAX_DRIVE_MM, distance - BALL_PROXIMITY_MM)
+    return (
+        f"drive_straight_mm({drive_dist:.2f})\n"
+    )
 
 
-    print(f"Tip of the robot: {reference_point}")
-    print(f"Destination: {destination_point}")
-    print(f"Robot angle: {robot_angle}")
-    print(f"Ball angle: {ball_angle}")
-    print(f"Angle: {angle}")
+def get_ball_collection_sequence():
+    """Returns the sequence of commands to collect a ball."""
+    return [
+        "open_gate()\n",
+        f"drive_straight_mm(50)\n",
+        "stop_drive()\n",
+        "close_gate()\n",
+    ]
 
 
-    print(f"Distance: {distance},\n Ball Angle: {ball_angle},\n Robot Angle: {robot_angle}")
-
-    match iteration:
-        case 0:
-            if 0 < angle:
-                    input = f"turn_right_deg({angle})\n"
-            else:
-                    input = f"turn_left_deg({abs(angle)})\n"
-        case 1:
-                input = f"drive_straight_mm({distance - 75})\n"
-        case 2:  
-                input = f"open_gate()\n"
-        case 3:
-                input = f"drive_straight_mm({50})\n"
-        case 4:
-                input = f"stop_drive()\n"
-        case 5:
-                input = f"close_gate()\n"
-    return input
-
-def move_to_goal(reference_point, goal_point, robot_angle, iteration: int = 0):
+def get_command_to_goal(reference_point, goal_point, robot_angle):
     """
-    Create an input dictionary for the pathfinding algorithm to move to the goal.
-
-    Args:
-        image (np.ndarray): The input image (BGR).
-        arrow_template (np.ndarray): Grayscale arrow template image.
-        transformed_points (list or np.ndarray): List of (x, y) points.
-
-    Returns:
-        dict: Input dictionary containing transformed points and arrow vectors.
+    Generates a single command to move towards the goal.
+    Returns a movement command string, or None if at the destination.
     """
-
-    print("Moving to goal...")
-
     if reference_point is None or goal_point is None:
         return None
 
     vector = ArrowVector(reference_point, goal_point)
     distance = vector.get_size()
-    goal_angle = vector.get_angle()
-    
-    if -180 <= robot_angle <= -90 and -180 <= goal_angle <= -90 and abs(robot_angle) <= abs(goal_angle):
-    # Both in Quadrant 4 (ball angle greater than robot angle)
-        angle = goal_angle + robot_angle
-    elif -180 <= robot_angle <= -90 and -180 <= goal_angle <= -90 and abs(robot_angle) >= abs(goal_angle):
-    # Both in Quadrant 4 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(goal_angle)) * -1
-    elif -180 <= robot_angle <= -90 and -90 < goal_angle <= 0:
-    # Robot in Q4, Ball in Q3
-        angle = (abs(robot_angle) + abs(goal_angle)) * -1
-    elif -180 <= robot_angle <= -90 and 0 < goal_angle <= 90:
-    # Robot in Q4, Ball in Q2
-        angle = (180 - abs(robot_angle)) + goal_angle
-    elif -180 <= robot_angle <= -90 and 90 < goal_angle <= 180:
-    # Robot in Q4, Ball in Q1
-        angle = (180 - abs(robot_angle)) + (180 - goal_angle)
-        angle *= -1
+    target_angle = vector.get_angle()
 
-    elif -90 < robot_angle <= 0 and -180 <= goal_angle <= -90:
-    # Robot in Q3, Ball in Q4
-        angle = goal_angle + robot_angle
-    elif -90 < robot_angle <= 0 and -90 < goal_angle <= 0 and abs(robot_angle) <= abs(goal_angle):
-    # Both in Q3 (ball angle greater than robot angle)
-        angle = goal_angle + robot_angle
-    elif -90 < robot_angle <= 0 and -90 < goal_angle <= 0 and abs(robot_angle) >= abs(goal_angle):
-    # Both in Q3 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(goal_angle)) * -1
-    elif -90 < robot_angle <= 0 and 0 < goal_angle <= 90:
-    # Robot in Q3, Ball in Q2
-        angle = abs(robot_angle) + goal_angle
-    elif -90 < robot_angle <= 0 and 90 < goal_angle <= 180:
-    # Robot in Q3, Ball in Q1
-        angle = (180 + robot_angle) + (180 - goal_angle)
-        angle *= -1
+    # If we are close enough, signal to start drop-off
+    if distance <= GOAL_PROXIMITY_MM:
+        return None
 
-    elif 0 < robot_angle <= 90 and -180 <= goal_angle <= -90:
-    # Robot in Q2, Ball in Q4
-        angle = (180 - abs(goal_angle)) + robot_angle
-    elif 0 < robot_angle <= 90 and -90 < goal_angle <= 0:
-    # Robot in Q2, Ball in Q3
-        angle = (robot_angle + abs(goal_angle)) - 1
-    elif 0 < robot_angle <= 90 and 0 < goal_angle <= 90 and abs(robot_angle) <= abs(goal_angle):
-    # Both in Q2  (ball angle greater than robot angle)
-        angle = goal_angle - robot_angle
-    elif 0 < robot_angle <= 90 and 0 < goal_angle <= 90 and abs(robot_angle) >= abs(goal_angle):
-    # Both in Q2 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(goal_angle)) * -1
-    elif 0 < robot_angle <= 90 and 90 < goal_angle <= 180:
-    # Robot in Q2, Ball in Q1
-        angle = (goal_angle - robot_angle)
+    turn_angle = _calculate_turn_angle(robot_angle, target_angle)
 
-    elif 90 < robot_angle <= 180 and -180 <= goal_angle <= -90:
-    # Robot in Q1, Ball in Q4
-        angle = (180 - abs(goal_angle)) + (180 - robot_angle)
-    elif 90 < robot_angle <= 180 and -90 < goal_angle <= 0:
-    # Robot in Q1, Ball in Q3
-        angle = (180 + goal_angle) + (robot_angle - 180)
-        angle *= -1
-    elif 90 < robot_angle <= 180 and 0 < goal_angle <= 90:
-    # Robot in Q1, Ball in Q2
-        angle = goal_angle + (robot_angle - 180)
-        angle *= -1
-    elif 90 < robot_angle <= 180 and 90 < goal_angle <= 180 and abs(robot_angle) <= abs(goal_angle):
-    # Both in Q1  (ball angle greater than robot angle)
-        angle = goal_angle - robot_angle
-    elif 90 < robot_angle <= 180 and 90 < goal_angle <= 180 and abs(robot_angle) >= abs(goal_angle):
-    # Both in Q1 (robot angle greater than ball angle)
-        angle = (abs(robot_angle) - abs(goal_angle)) * -1
-    else:
-        angle = 0
-        print("Unhandled angle case")
+    print(f"Robot Angle: {robot_angle:.2f}, Goal Angle: {target_angle:.2f}, Turn Angle: {turn_angle:.2f}, Distance: {distance:.2f}")
+
+    # If we need to turn more than the threshold, send a turn command
+    if abs(turn_angle) > TURN_THRESHOLD_DEG:
+        turn_amount = min(abs(turn_angle), 30)
+        if turn_angle > 0:
+            return f"turn_right_deg({turn_amount:.2f})\n"
+        else:
+            return f"turn_left_deg({turn_amount:.2f})\n"
+
+    # Otherwise, drive forward
+    drive_dist = min(MAX_DRIVE_MM, distance - GOAL_PROXIMITY_MM)
+    return f"drive_straight_mm({drive_dist:.2f})\n"
 
 
-    print(f"Final Angle: {angle} = Robot: {robot_angle}, Ball: {goal_angle}")
-
-    print(f"Tip of the robot: {reference_point}")
-    print(f"Destination: {goal_point}")
-    print(f"Robot angle: {robot_angle}")
-    print(f"Goal angle: {goal_angle}")
-    print(f"Angle: {angle}")
-
-    match iteration:
-        case 0:
-            if 0 < angle:
-                    input = f"turn_right_deg({angle})\n"
-            else:
-                    input = f"turn_left_deg({abs(angle)})\n"
-        case 1:
-                input = f"drive_straight_mm({distance - 50})\n"
-        case 2:
-                input = f"stop_drive()\n"
-        case 3:
-                input = f"open_gate()\n"
-        case 4:
-                input = f"push_out()\n"
-        case 5:
-                input = f"push_return()\n"
-        case 6:
-                input = f"drive_straight_mm({-50})\n"
-        case 7:
-                input = f"close_gate()\n"   
-    return input
+def get_goal_drop_off_sequence():
+    """Returns the sequence of commands to drop off balls at the goal."""
+    return [
+        "stop_drive()\n",
+        "open_gate()\n",
+        "push_out()\n",
+        "push_return()\n",
+        "drive_straight_mm(-50)\n",
+        "close_gate()\n",
+    ]

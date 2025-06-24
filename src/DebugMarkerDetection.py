@@ -7,7 +7,7 @@ from math import atan2, degrees, hypot
 
 # --- CONFIGURATION ---
 CALIB_FILE = os.path.join(os.path.dirname(__file__), "marker_hsv.json")
-VIDEO_SRC = 1  # Change to 1 if your camera is on index 1
+VIDEO_SRC = 1 # Change to 1 if your camera is on index 1
 
 # --- MARKER FILTERS ---
 MIN_AREA = 40
@@ -72,6 +72,8 @@ def find_markers_with_reasons(mask: np.ndarray):
 
 def main():
     cap = cv2.VideoCapture(VIDEO_SRC)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():
         print("Could not open video source", VIDEO_SRC)
         return

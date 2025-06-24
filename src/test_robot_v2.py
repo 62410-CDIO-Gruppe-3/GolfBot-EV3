@@ -12,9 +12,68 @@ from typing import Optional, Tuple, Dict, List
 CALIB_FILE = os.path.join(os.path.dirname(__file__), "marker_hsv.json")
 
 # fallback values (will be overridden if JSON exists)
-_DEFAULT_PINK_HSV = ((np.array([155, 60, 60]), np.array([179, 255, 255])),)
-_DEFAULT_PURPLE_HSV = ((np.array([110, 40, 40]), np.array([140, 255, 255])),)
+#_DEFAULT_PINK_HSV = ((np.array([155, 60, 60]), np.array([179, 255, 255])),)
+#_DEFAULT_PURPLE_HSV = ((np.array([110, 40, 40]), np.array([140, 255, 255])),)
 
+# ---------------------------------------------------------------------------
+# --- CAMERA UTILITIES ------------------------------------------------------
+# ---------------------------------------------------------------------------
+# --- LIGHTING NORMALISATION -------------------------------------------------
+
+def preprocess_lighting(img_bgr: np.ndarray) -> np.ndarray:
+    """
+    1. Gray-World colour constancy -> removes colour casts and tracks slow
+       brightness drift.
+    2. CLAHE on the lightness channel only -> makes 'dark' frames resemble
+       'bright' ones without shifting hue.
+    """
+    # --- Gray-World ---------------------------------------------------------
+    img = img_bgr.astype(np.float32)
+    avg_b, avg_g, avg_r = [c.mean() + 1e-6 for c in cv2.split(img)]
+    avg = (avg_b + avg_g + avg_r) / 3.0
+    scale = avg / np.array([avg_b, avg_g, avg_r])
+    img *= scale
+    img = np.clip(img, 0, 255).astype(np.uint8)
+
+    # --- CLAHE on L channel -------------------------------------------------
+    lab  = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    l_eq  = clahe.apply(l)
+    img_eq = cv2.merge((l_eq, a, b))
+    return cv2.cvtColor(img_eq, cv2.COLOR_LAB2BGR)
+
+def init_camera(src: int | str = 0,
+                exposure: float = -6.0,     # typical webcam units (≈1/60 s)
+                gain: float = 0.0,
+                wb_blue: float = 4600,      # Kelvin → webcam units vary
+                wb_red: float = 4600):
+    """
+    Open a cv2.VideoCapture, then put *all* automatic controls in manual mode
+    so the colour statistics become repeatable frame-to-frame.
+
+    Returns
+    -------
+    cv2.VideoCapture
+    """
+    cap = cv2.VideoCapture(src)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    if not cap.isOpened():
+        raise RuntimeError(f"Could not open video source {src}")
+
+    # ------------ turn OFF every auto feature the driver exposes ------------
+    # NOTE: driver constants differ between platforms, so we catch failures.
+    # Windows + DirectShow
+    cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 1)          # 1 = manual, 3 = auto
+    cap.set(cv2.CAP_PROP_AUTO_WB,       0)          # 0 = manual
+    # Linux + UVC (values are floats; -1 = auto)
+    cap.set(cv2.CAP_PROP_EXPOSURE,      exposure)
+    cap.set(cv2.CAP_PROP_GAIN,          gain)
+    cap.set(cv2.CAP_PROP_WHITE_BALANCE_BLUE_U, wb_blue)
+    cap.set(cv2.CAP_PROP_WHITE_BALANCE_RED_V,  wb_red)
+
+    return cap
 
 def _load_hsv_ranges():
     """Return ((pink_lo, pink_hi),), ((purple_lo, purple_hi),) tuples."""
@@ -112,7 +171,10 @@ class _RobotTracker:
         roi = self._roi_slices(frame_bgr.shape)
         crop = frame_bgr[roi] if roi else frame_bgr
 
-        hsv = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
+        # --- NEW STEP -------------------------------------------------------------
+        crop = preprocess_lighting(crop)
+
+        hsv  = cv2.cvtColor(crop, cv2.COLOR_BGR2HSV)
         kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 
         pink_m   = cv2.morphologyEx(self._colour_mask(hsv, PINK_HSV),   cv2.MORPH_OPEN, kernel)
@@ -144,7 +206,7 @@ class _RobotTracker:
 
         (fx, fy), (bx, by), d = best
         cx, cy = (fx + bx) // 2, (fy + by) // 2
-        heading = degrees(atan2(fy - by, fx - bx))  # +ve = clockwise
+        heading = degrees(atan2(fy - by, fx - bx)) + 3  # +ve = clockwise, adjusted 5 deg left
         print(f"[DEBUG] Chosen pair: front=({fx},{fy}), back=({bx},{by}), centroid=({cx},{cy}), heading={heading:.2f}°")
 
         # --- promote ROI coords to full-frame -----------------------------
@@ -161,7 +223,7 @@ class _RobotTracker:
                 (fx_t, fy_t), (bx_t, by_t) = pts_t
                 cx_t, cy_t = (fx_t + bx_t) * 0.5, (fy_t + by_t) * 0.5
                 cx_out, cy_out = int(round(cx_t)), int(round(cy_t))
-                heading = degrees(atan2(fy_t - by_t, fx_t - bx_t))
+                heading = degrees(atan2(fy_t - by_t, fx_t - bx_t)) - 5  # adjusted 5 deg left
             except cv2.error as e:
                 print("[robot_tracker] WARNING: homography transform failed:", e)
                 # fall back to pixel coords
@@ -224,7 +286,8 @@ def get_robot_pose(
     result = _tracker.update(frame_bgr, debug=debug, homography=homography)
 
     # Retain verbose detection diagnostics for external logging
-    hsv = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2HSV)
+    frame_bgr_norm = preprocess_lighting(frame_bgr)
+    hsv = cv2.cvtColor(frame_bgr_norm, cv2.COLOR_BGR2HSV)
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     pink_mask = cv2.morphologyEx(_tracker._colour_mask(hsv, PINK_HSV), cv2.MORPH_OPEN, kernel)
     purple_mask = cv2.morphologyEx(_tracker._colour_mask(hsv, PURPLE_HSV), cv2.MORPH_OPEN, kernel)
@@ -260,11 +323,11 @@ class _PickerState:
 
 def _mouse_cb(event, x, y, _flags, state: _PickerState):
     if event == cv2.EVENT_LBUTTONDOWN:
-        state._latest_xy = (x, y)
+        state._latest_xy_resized = (x, y)
         state._clicked = True
 
 
-def calibrate_markers(video_src=1, h_margin=10, sv_margin=40):
+def calibrate_markers(video_src=1, h_margin=20, sv_margin=80):
     """Interactively create/update *marker_hsv.json*.
 
     Controls
@@ -277,11 +340,14 @@ def calibrate_markers(video_src=1, h_margin=10, sv_margin=40):
     Q / Esc – quit without saving
     """
     cap = cv2.VideoCapture(video_src)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     if not cap.isOpened():
         raise RuntimeError("Could not open video source " + str(video_src))
 
     state = _PickerState()
-    cv2.namedWindow("calibrate")
+    cv2.namedWindow("calibrate", cv2.WINDOW_NORMAL)
+    cv2.resizeWindow("calibrate", 640, 360)
     cv2.setMouseCallback("calibrate", _mouse_cb, state)
 
     print("\n=== HSV CALIBRATION ===")
@@ -292,9 +358,13 @@ def calibrate_markers(video_src=1, h_margin=10, sv_margin=40):
         ok, frame = cap.read()
         if not ok:
             break
-        display = frame.copy()
 
-        # draw stored marks
+        # Resize frame first
+        display = cv2.resize(frame.copy(), (640, 360))
+        scale_x = 640 / frame.shape[1]
+        scale_y = 360 / frame.shape[0]
+
+        # draw stored marks at their clicked (resized) positions
         for mx, my, lbl in state.marks:
             colour = (0, 0, 255) if lbl == "pink" else (255, 0, 0)
             cv2.drawMarker(display, (mx, my), colour,
@@ -303,11 +373,14 @@ def calibrate_markers(video_src=1, h_margin=10, sv_margin=40):
 
         # mouse click? read pixel
         if getattr(state, "_clicked", False):
-            px, py = state._latest_xy
+            px_r, py_r = state._latest_xy_resized
+            # Map back to original frame coordinates
+            px = int(px_r / scale_x)
+            py = int(py_r / scale_y)
             hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)[py, px]
-            state.add_sample(tuple(int(v) for v in hsv), px, py)
+            state.add_sample(tuple(int(v) for v in hsv), px_r, py_r)  # store resized coords for drawing
             state._clicked = False
-            print(f"{state.label:6s} @ ({px:3d},{py:3d}) -> HSV {hsv}")
+            print(f"{state.label:6s} @ ({px:3d},{py:3d}) [resized=({px_r},{py_r})] -> HSV {hsv}")
 
         # overlay current mode and instructions
         txt = ("Sampling: " + state.label.upper() +
@@ -333,7 +406,7 @@ def calibrate_markers(video_src=1, h_margin=10, sv_margin=40):
 
             # flash a green ✓ for ~1 second (≈30 frames)
             for _ in range(30):
-                flash = frame.copy()
+                flash = cv2.resize(frame.copy(), (640, 360))
                 cv2.putText(flash, "✓ Saved", (20, 60),
                             cv2.FONT_HERSHEY_SIMPLEX, 1.4,
                             (0, 255, 0), 3, cv2.LINE_AA)

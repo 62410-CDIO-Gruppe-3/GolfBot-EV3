@@ -10,6 +10,8 @@ HOMOGRAPHY_FILE = str((Path(__file__).parent / "homography.npy").resolve())
 def main():
     # Initialize video capture (using camera 1 to match main.py). Use iriun.com to get the camera working.
     cap = cv2.VideoCapture(1)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     
     if not cap.isOpened():
         print("Error: Could not open camera")
