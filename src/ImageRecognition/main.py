@@ -12,16 +12,7 @@ import os
 import time
 from pathlib import Path
 from ImageRecognition.Homography import load_homography
-from test_robot_v2 import get_robot_pose
-import datetime
-from src.Movement.AutonomousClient import send_and_receive
-from src.Movement.CommandLoop import (
-    get_command_to_ball,
-    get_ball_collection_sequence,
-    get_command_to_goal,
-    get_goal_drop_off_sequence,
-)
-from src.PathFinding.ArrowVector import ArrowVector
+from track_robot import get_robot_pose
 
 # Example usage
 API_KEY = "BdmadiDKNX7YzP4unsUm"
