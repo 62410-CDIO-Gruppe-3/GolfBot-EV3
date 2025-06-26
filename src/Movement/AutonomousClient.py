@@ -8,7 +8,7 @@ import time
 import os 
 import sys
 
-sys.path.append("C:\\Users\\hatal\\GolfBot-EV3\\src")
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from ImageRecognition.Homography import create_homography, save_homography
 from ImageRecognition.ImagePoints import get_transformed_points_from_image
@@ -126,7 +126,6 @@ def build_commands_from_points(
 
 def main():
     # Example usage
-    # image = "C:\\Users\\hatal\\GolfBot-EV3\\src\\assets\\test_image5.jpg"
     reference_point = (0, 0)  # This should be the detected arrow tip
     tip = reference_point
     # transformed_points = get_transformed_points_from_image(image)

@@ -1,5 +1,6 @@
 import sys
-sys.path.append(r"C:\\Users\\hatal\\GolfBot-EV3\\src")
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import math
 
